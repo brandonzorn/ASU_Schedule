@@ -24,7 +24,11 @@ COURSE, FACULTY, SPECIALITY, SUBGROUP = range(4)
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     courses = [course for (course,) in session.query(Group.course).distinct().all()]
     keyboard = [
-        [InlineKeyboardButton(f"{course} курс", callback_data=f"{course}") for course in courses],
+        [
+            InlineKeyboardButton(
+                f"{course} курс", callback_data=f"{course}",
+            ) for course in courses
+        ],
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -35,11 +39,15 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 async def course_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     query = update.callback_query
     await query.answer()
-    context.user_data['course'] = query.data
+    context.user_data["course"] = query.data
 
     faculties = [faculty for (faculty,) in session.query(Group.faculty).distinct().all()]
     keyboard = [
-        [InlineKeyboardButton(f"{faculty}", callback_data=f"{faculty}") for faculty in faculties],
+        [
+            InlineKeyboardButton(
+                f"{faculty}", callback_data=f"{faculty}",
+            ) for faculty in faculties
+        ],
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -50,11 +58,19 @@ async def course_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 async def faculty_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     query = update.callback_query
     await query.answer()
-    context.user_data['faculty'] = query.data
+    context.user_data["faculty"] = query.data
 
-    specialities = [speciality for (speciality,) in session.query(Group.speciality).distinct().all()]
+    specialities = [
+        speciality for (speciality,) in session.query(
+            Group.speciality,
+        ).distinct().all()
+    ]
     keyboard = [
-        [InlineKeyboardButton(f"{speciality}", callback_data=f"{speciality}") for speciality in specialities],
+        [
+            InlineKeyboardButton(
+                f"{speciality}", callback_data=f"{speciality}",
+            ) for speciality in specialities
+        ],
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -65,11 +81,13 @@ async def faculty_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -
 async def speciality_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     query = update.callback_query
     await query.answer()
-    context.user_data['speciality'] = query.data
+    context.user_data["speciality"] = query.data
 
     keyboard = [
-        [InlineKeyboardButton("1 Подгруппа", callback_data="1"),
-         InlineKeyboardButton("2 Подгруппа", callback_data="2")]
+        [
+            InlineKeyboardButton("1 Подгруппа", callback_data="1"),
+            InlineKeyboardButton("2 Подгруппа", callback_data="2"),
+        ],
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -85,9 +103,9 @@ async def subgroup_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) 
     name = query.from_user.first_name
     subgroup = int(query.data)
 
-    course = context.user_data['course']
-    faculty = context.user_data['faculty']
-    speciality = context.user_data['speciality']
+    course = context.user_data["course"]
+    faculty = context.user_data["faculty"]
+    speciality = context.user_data["speciality"]
 
     group = session.query(Group).filter_by(
         course=course,
@@ -121,7 +139,7 @@ async def info(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 Username: {user.name}
 Group: {user.group.course}_{user.group.faculty}_{user.group.speciality}
 Subgroup: {user.subgroup}
-        """
+        """,
     )
 
 
@@ -129,7 +147,9 @@ async def schedule(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user_id = update.message.from_user.id
     user = session.query(User).filter_by(id=user_id).first()
     if not user:
-        await update.message.reply_text("Вы не зарегистрированы. Пожалуйста, начните с команды /start.")
+        await update.message.reply_text(
+            "Вы не зарегистрированы. Пожалуйста, начните с команды /start.",
+        )
         return
 
     current_day_of_week = datetime.now().isoweekday()
@@ -145,7 +165,12 @@ async def schedule(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     schedule_text = f"Расписание на {day_name[current_day_of_week - 1]}:\n\n"
     for schedule in schedules:
         if schedule.subgroup is None or schedule.subgroup == user.subgroup:
-            schedule_text += f"{schedule.class_number} Пара: {schedule.subject}, {schedule.room}, {schedule.teacher}\n"
+            schedule_text += (
+                f"{schedule.class_number} "
+                f"Пара: {schedule.subject},"
+                f"{schedule.room}, "
+                f"{schedule.teacher}\n"
+            )
     await update.message.reply_text(schedule_text)
 
 
