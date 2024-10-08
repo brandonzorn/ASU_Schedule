@@ -9,7 +9,7 @@ from telegram import (
     Update,
 )
 from telegram.ext import (
-    ApplicationBuilder,
+    Application,
     CallbackQueryHandler,
     CommandHandler,
     ContextTypes,
@@ -17,41 +17,22 @@ from telegram.ext import (
 )
 
 from asuschedule.config import BOT_TOKEN
+from asuschedule.consts import LESSON_TIMES
 from asuschedule.database import session
-from asuschedule.models import Group, User, Schedule
+from asuschedule.handlers.registration_handlers import (
+    course_callback,
+    faculty_callback,
+    speciality_callback,
+    subgroup_callback,
+    start,
+    cancel,
+    COURSE,
+    FACULTY,
+    SPECIALITY,
+    SUBGROUP,
+)
+from asuschedule.models import User, Schedule
 
-COURSE, FACULTY, SPECIALITY, SUBGROUP = range(4)
-
-
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    courses = [course for (course,) in session.query(Group.course).distinct().all()]
-    keyboard = [
-        [
-            InlineKeyboardButton(
-                f"{course} курс", callback_data=f"{course}",
-            ) for course in courses
-        ],
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-
-    await update.message.reply_text("Выберите курс:", reply_markup=reply_markup)
-    return COURSE
-
-
-async def course_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    query = update.callback_query
-    await query.answer()
-    context.user_data["course"] = query.data
-
-    faculties = [faculty for (faculty,) in session.query(Group.faculty).distinct().all()]
-    keyboard = [
-        [
-            InlineKeyboardButton(
-                f"{faculty}", callback_data=f"{faculty}",
-            ) for faculty in faculties
-        ],
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
 
     await query.edit_message_text("Выберите факультет:", reply_markup=reply_markup)
     return FACULTY
