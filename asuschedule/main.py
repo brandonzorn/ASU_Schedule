@@ -1,4 +1,3 @@
-import locale
 import datetime
 
 import pytz
@@ -190,5 +189,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    locale.setlocale(locale.LC_TIME, "Russian_Russia")
     main()
