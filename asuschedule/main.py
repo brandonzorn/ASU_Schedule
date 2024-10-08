@@ -1,3 +1,5 @@
+import locale
+
 from calendar import day_name
 from datetime import datetime
 
@@ -154,19 +156,18 @@ async def schedule(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
     current_day_of_week = datetime.now().isoweekday()
     schedules = session.query(Schedule).filter_by(
-        group_id=user.group_id,
+        group_id=user.group.id,
         day_of_week=current_day_of_week,
     ).all()
 
     if not schedules:
         await update.message.reply_text("Расписание не найдено.")
         return
-
     schedule_text = f"Расписание на {day_name[current_day_of_week - 1]}:\n\n"
     for schedule in schedules:
         if schedule.subgroup is None or schedule.subgroup == user.subgroup:
             schedule_text += (
-                f"{schedule.class_number} "
+                f"{schedule.lesson_number} "
                 f"Пара: {schedule.subject},"
                 f"{schedule.room}, "
                 f"{schedule.teacher}\n"
@@ -194,4 +195,5 @@ def main() -> None:
 
 
 if __name__ == "__main__":
+    locale.setlocale(locale.LC_TIME, "Russian_Russia")
     main()

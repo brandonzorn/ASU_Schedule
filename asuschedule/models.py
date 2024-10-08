@@ -34,8 +34,8 @@ class Schedule(Base):
     day_of_week = Column(Integer, nullable=False)
     lesson_number = Column(Integer, nullable=False)
     subject = Column(String, nullable=False)
-    teacher = Column(String, nullable=False)
-    room = Column(String, nullable=False)
+    teacher = Column(String, nullable=True)
+    room = Column(String, nullable=True)
     group_id = Column(Integer, ForeignKey("groups.id"))
     subgroup = Column(Integer, nullable=True)
 
