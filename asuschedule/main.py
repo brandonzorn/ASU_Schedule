@@ -32,6 +32,7 @@ from asuschedule.handlers.registration_handlers import (
     FACULTY,
     SPECIALITY,
     SUBGROUP,
+    change_group,
 )
 from asuschedule.models import User, Schedule
 
@@ -93,10 +94,11 @@ async def schedule_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -
             teacher_profile_url = "/"
             start_time, end_time = LESSON_TIMES.get(schedule.lesson_number, ("-", "-"))
             schedule_text += (
-                f"\t({start_time} - {end_time}) {schedule.lesson_number} пара\n"
-                f"\tПредмет: {schedule.subject}\n"
-                f"\tКабинет: {schedule.room}\n"
-                f"\tПреподаватель: <a href='{teacher_profile_url}'>{schedule.teacher}</a>\n"
+                f"\t{schedule.lesson_number} пара ({start_time} - {end_time})\n"
+                f"\t├Предмет: {schedule.subject}\n"
+                f"\t├Кабинет: {schedule.room}\n"
+                f"\t├Преподаватель: "
+                f"<a href='{teacher_profile_url}'>{schedule.teacher}</a>\n"
                 f"------------\n"
             )
     await update.message.reply_text(schedule_text, parse_mode="HTML")
@@ -141,10 +143,11 @@ async def daily_schedule_handler(context: ContextTypes.DEFAULT_TYPE) -> None:
                     schedule.lesson_number, ("-", "-"),
                 )
                 schedule_text += (
-                    f"\t({start_time} - {end_time}) {schedule.lesson_number} пара\n"
-                    f"\tПредмет: {schedule.subject}\n"
-                    f"\tКабинет: {schedule.room}\n"
-                    f"\tПреподаватель: <a href='{teacher_profile_url}'>{schedule.teacher}</a>\n"
+                    f"\t{schedule.lesson_number} пара ({start_time} - {end_time})\n"
+                    f"\t├Предмет: {schedule.subject}\n"
+                    f"\t├Кабинет: {schedule.room}\n"
+                    f"\t├Преподаватель: "
+                    f"<a href='{teacher_profile_url}'>{schedule.teacher}</a>\n"
                     f"------------\n"
                 )
         await context.bot.send_message(
@@ -166,7 +169,10 @@ def main() -> None:
     )
 
     conv_handler = ConversationHandler(
-        entry_points=[CommandHandler("start", start)],
+        entry_points=[
+            CommandHandler("start", start),
+            CallbackQueryHandler(change_group, pattern="change_group"),
+        ],
         states={
             COURSE: [CallbackQueryHandler(course_callback)],
             FACULTY: [CallbackQueryHandler(faculty_callback)],

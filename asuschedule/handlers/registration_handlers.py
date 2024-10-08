@@ -22,6 +22,24 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     return COURSE
 
 
+async def change_group(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    query = update.callback_query
+    await query.answer()
+
+    courses = [course for (course,) in session.query(Group.course).distinct().all()]
+    keyboard = [
+        [
+            InlineKeyboardButton(
+                f"{course} курс", callback_data=f"{course}",
+            ) for course in courses
+        ],
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+
+    await query.edit_message_text("Выберите курс:", reply_markup=reply_markup)
+    return COURSE
+
+
 async def course_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     query = update.callback_query
     await query.answer()
@@ -109,11 +127,11 @@ async def subgroup_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) 
             group_id=group.id,
         )
         session.add(new_user)
-        session.commit()
         await query.edit_message_text(f"Регистрация завершена! Привет, {name}.")
     else:
-        await query.edit_message_text("Вы уже зарегистрированы.")
-
+        user.group_id = group.id
+        await query.edit_message_text("Ваша группа изменена.")
+    session.commit()
     return ConversationHandler.END
 
 
