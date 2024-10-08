@@ -18,10 +18,10 @@ from telegram.ext import (
     ConversationHandler,
 )
 
-from asuschedule.config import BOT_TOKEN
-from asuschedule.consts import LESSON_TIMES
-from asuschedule.database import session
-from asuschedule.handlers.registration_handlers import (
+from config import BOT_TOKEN
+from consts import LESSON_TIMES
+from database import session
+from handlers.registration_handlers import (
     course_callback,
     faculty_callback,
     speciality_callback,
