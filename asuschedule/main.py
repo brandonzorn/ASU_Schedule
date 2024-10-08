@@ -34,7 +34,7 @@ from handlers.registration_handlers import (
     SUBGROUP,
     change_group,
 )
-from asuschedule.models import User, Schedule
+from models import User, Schedule
 
 
 async def check_user_registration(

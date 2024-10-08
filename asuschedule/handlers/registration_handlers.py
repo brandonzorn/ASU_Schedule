@@ -1,8 +1,8 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes, ConversationHandler
 
-from asuschedule.database import session
-from asuschedule.models import Group, User
+from database import session
+from models import Group, User
 
 COURSE, FACULTY, SPECIALITY, SUBGROUP = range(4)
 
