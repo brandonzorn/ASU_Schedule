@@ -1,7 +1,9 @@
 import locale
+import datetime
+
+import pytz
 
 from calendar import day_name
-from datetime import datetime
 
 from telegram import (
     InlineKeyboardButton,
@@ -34,108 +36,49 @@ from asuschedule.handlers.registration_handlers import (
 from asuschedule.models import User, Schedule
 
 
-    await query.edit_message_text("Выберите факультет:", reply_markup=reply_markup)
-    return FACULTY
-
-
-async def faculty_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    query = update.callback_query
-    await query.answer()
-    context.user_data["faculty"] = query.data
-
-    specialities = [
-        speciality for (speciality,) in session.query(
-            Group.speciality,
-        ).distinct().all()
-    ]
-    keyboard = [
-        [
-            InlineKeyboardButton(
-                f"{speciality}", callback_data=f"{speciality}",
-            ) for speciality in specialities
-        ],
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-
-    await query.edit_message_text("Выберите специальность:", reply_markup=reply_markup)
-    return SPECIALITY
-
-
-async def speciality_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    query = update.callback_query
-    await query.answer()
-    context.user_data["speciality"] = query.data
-
-    keyboard = [
-        [
-            InlineKeyboardButton("1 Подгруппа", callback_data="1"),
-            InlineKeyboardButton("2 Подгруппа", callback_data="2"),
-        ],
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-
-    await query.edit_message_text("Выберите подгруппу:", reply_markup=reply_markup)
-    return SUBGROUP
-
-
-async def subgroup_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    query = update.callback_query
-    await query.answer()
-
-    user_id = query.from_user.id
-    name = query.from_user.first_name
-    subgroup = int(query.data)
-
-    course = context.user_data["course"]
-    faculty = context.user_data["faculty"]
-    speciality = context.user_data["speciality"]
-
-    group = session.query(Group).filter_by(
-        course=course,
-        faculty=faculty,
-        speciality=speciality,
-    ).first()
-    user = session.query(User).filter_by(id=user_id).first()
-    if not user:
-        new_user = User(id=user_id, name=name, subgroup=subgroup, group_id=group.id)
-        session.add(new_user)
-        session.commit()
-        await query.edit_message_text(f"Регистрация завершена! Привет, {name}.")
-    else:
-        await query.edit_message_text("Вы уже зарегистрированы.")
-
-    return ConversationHandler.END
-
-
-async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    await update.message.reply_text("Регистрация отменена.")
-    return ConversationHandler.END
-
-
-async def info(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def check_user_registration(
+        update: Update, context: ContextTypes.DEFAULT_TYPE,
+) -> User | None:
+    """Проверяет, зарегистрирован ли пользователь. Возвращает объект User или None."""
     user_id = update.effective_user.id
-    user = session.query(User).filter_by(id=user_id).first()
-    if not user:
-        await update.message.reply_text("Вы не зарегистрированы.")
-    await update.message.reply_text(
-        f"""
-Username: {user.name}
-Group: {user.group.course}_{user.group.faculty}_{user.group.speciality}
-Subgroup: {user.subgroup}
-        """,
-    )
-
-
-async def schedule(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    user_id = update.message.from_user.id
     user = session.query(User).filter_by(id=user_id).first()
     if not user:
         await update.message.reply_text(
             "Вы не зарегистрированы. Пожалуйста, начните с команды /start.",
         )
+        return None
+    return user
+
+
+async def info(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    user = await check_user_registration(update, context)
+    if user is None:
+        return
+    keyboard = [
+        [
+            InlineKeyboardButton(
+                "Изменить группу",
+                callback_data="change_group",
+            ),
+        ],
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    await update.message.reply_text(
+        f"""
+Username: {user.name}
+Group: {user.group.get_name()}
+Subgroup: {user.subgroup}
+        """,
+        reply_markup=reply_markup,
+    )
+
+
+async def schedule_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    user = await check_user_registration(update, context)
+    if user is None:
         return
 
-    current_day_of_week = datetime.now().isoweekday()
+    current_day_of_week = datetime.datetime.now().isoweekday()
     schedules = session.query(Schedule).filter_by(
         group_id=user.group.id,
         day_of_week=current_day_of_week,
@@ -144,20 +87,84 @@ async def schedule(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if not schedules:
         await update.message.reply_text("Расписание не найдено.")
         return
-    schedule_text = f"Расписание на {day_name[current_day_of_week - 1]}:\n\n"
+    schedule_text = f"<b>Расписание на {day_name[current_day_of_week - 1]}:</b>\n\n"
     for schedule in schedules:
         if schedule.subgroup is None or schedule.subgroup == user.subgroup:
+            teacher_profile_url = "/"
+            start_time, end_time = LESSON_TIMES.get(schedule.lesson_number, ("-", "-"))
             schedule_text += (
-                f"{schedule.lesson_number} "
-                f"Пара: {schedule.subject},"
-                f"{schedule.room}, "
-                f"{schedule.teacher}\n"
+                f"\t({start_time} - {end_time}) {schedule.lesson_number} пара\n"
+                f"\tПредмет: {schedule.subject}\n"
+                f"\tКабинет: {schedule.room}\n"
+                f"\tПреподаватель: <a href='{teacher_profile_url}'>{schedule.teacher}</a>\n"
+                f"------------\n"
             )
-    await update.message.reply_text(schedule_text)
+    await update.message.reply_text(schedule_text, parse_mode="HTML")
+
+
+async def set_daily_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    user = await check_user_registration(update, context)
+    if user is None:
+        return
+    if user.daily_notify:
+        await update.message.reply_text(
+            "Ежедневная рассылка выключена",
+        )
+    else:
+        await update.message.reply_text(
+            "Ежедневная рассылка включена",
+        )
+    user.daily_notify = not user.daily_notify
+    session.commit()
+
+
+async def daily_schedule_handler(context: ContextTypes.DEFAULT_TYPE) -> None:
+    users = session.query(User).filter_by(daily_notify=True).all()
+    for user in users:
+        current_day_of_week = datetime.datetime.now().isoweekday()
+        schedules = session.query(Schedule).filter_by(
+            group_id=user.group.id,
+            day_of_week=current_day_of_week,
+        ).all()
+
+        if not schedules:
+            await context.bot.send_message(
+                chat_id=user.id,
+                text="Расписание не найдено.",
+            )
+            return
+        schedule_text = f"<b>Расписание на {day_name[current_day_of_week - 1]}:</b>\n\n"
+        for schedule in schedules:
+            if schedule.subgroup is None or schedule.subgroup == user.subgroup:
+                teacher_profile_url = "/"
+                start_time, end_time = LESSON_TIMES.get(
+                    schedule.lesson_number, ("-", "-"),
+                )
+                schedule_text += (
+                    f"\t({start_time} - {end_time}) {schedule.lesson_number} пара\n"
+                    f"\tПредмет: {schedule.subject}\n"
+                    f"\tКабинет: {schedule.room}\n"
+                    f"\tПреподаватель: <a href='{teacher_profile_url}'>{schedule.teacher}</a>\n"
+                    f"------------\n"
+                )
+        await context.bot.send_message(
+            chat_id=user.id,
+            text=schedule_text,
+            parse_mode="HTML",
+        )
 
 
 def main() -> None:
-    application = ApplicationBuilder().token(BOT_TOKEN).build()
+    application = Application.builder().token(BOT_TOKEN).build()
+
+    job_queue = application.job_queue
+    job_queue.run_daily(
+        daily_schedule_handler, datetime.time(
+            hour=8,
+            tzinfo=pytz.timezone("Europe/Moscow"),
+        ),
+    )
+
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler("start", start)],
         states={
@@ -169,7 +176,8 @@ def main() -> None:
         fallbacks=[CommandHandler("cancel", cancel)],
     )
     application.add_handler(CommandHandler("info", info))
-    application.add_handler(CommandHandler("schedule", schedule))
+    application.add_handler(CommandHandler("schedule", schedule_handler))
+    application.add_handler(CommandHandler("daily", set_daily_handler))
 
     application.add_handler(conv_handler)
     application.run_polling()
