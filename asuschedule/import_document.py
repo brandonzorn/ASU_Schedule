@@ -42,6 +42,8 @@ for val in combined_df.values:
     existing_schedule = session.query(Schedule).filter_by(
         group_id=group.id,
         lesson_number=lesson_number,
+        day_of_week=num_day_of_week,
+        subgroup=subgroup,
     ).first()
 
     if existing_schedule:
@@ -52,7 +54,7 @@ for val in combined_df.values:
         existing_schedule.subgroup = subgroup
         print(
             f"Обновлено расписание для группы "
-            f"ID {group.get_name()} и пары номер {lesson_number}.",
+            f"ID {group.get_name()} и пары номер {lesson_number} в {num_day_of_week}.",
         )
     else:
         session.add(
@@ -68,7 +70,7 @@ for val in combined_df.values:
         )
         print(
             f"Добавлено новое расписание для группы "
-            f"ID {group.get_name()} и пары номер {lesson_number}.",
+            f"ID {group.get_name()} и пары номер {lesson_number} в {num_day_of_week}.",
         )
 
 
