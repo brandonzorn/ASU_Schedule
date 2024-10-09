@@ -67,6 +67,8 @@ async def faculty_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     specialities = [
         speciality for (speciality,) in session.query(
             Group.speciality,
+        ).filter(
+            Group.course == context.user_data["course"],
         ).distinct().all()
     ]
     keyboard = [
