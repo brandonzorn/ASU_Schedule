@@ -45,7 +45,7 @@ for val in combined_df.values:
     ).first()
 
     if existing_schedule:
-        existing_schedule.day_of_week = day_of_week
+        existing_schedule.day_of_week = num_day_of_week
         existing_schedule.subject = subject
         existing_schedule.teacher = teacher
         existing_schedule.room = room
