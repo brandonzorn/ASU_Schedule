@@ -82,7 +82,7 @@ async def schedule_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     schedules = session.query(Schedule).filter_by(
         group_id=user.group.id,
         day_of_week=current_day_of_week,
-    ).all()
+    ).order_by(Schedule.lesson_number).all()
 
     if not schedules:
         await update.message.reply_text("Расписание не найдено.")
