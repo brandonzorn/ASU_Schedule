@@ -78,7 +78,7 @@ async def schedule_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     if user is None:
         return
 
-    current_day_of_week = datetime.datetime.now().isoweekday()
+    current_day_of_week = datetime.datetime.now().weekday()
     schedules = session.query(Schedule).filter_by(
         group_id=user.group.id,
         day_of_week=current_day_of_week,
@@ -87,7 +87,7 @@ async def schedule_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     if not schedules:
         await update.message.reply_text("Расписание не найдено.")
         return
-    schedule_text = f"<b>Расписание на {day_name[current_day_of_week - 1]}:</b>\n\n"
+    schedule_text = f"<b>Расписание на {day_name[current_day_of_week]}:</b>\n\n"
     for schedule in schedules:
         if schedule.subgroup is None or schedule.subgroup == user.subgroup:
             teacher_profile_url = "/"
