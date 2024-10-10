@@ -106,10 +106,11 @@ async def set_daily_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) 
 
 def get_schedules(user):
     current_day_of_week = datetime.datetime.now().weekday()
-    return session.query(Schedule).filter_by(
+    return session.query(
+        Schedule,
+    ).filter_by(
         group_id=user.group.id,
         day_of_week=current_day_of_week,
-
     ).filter(
         or_(
             Schedule.subgroup.is_(None),
@@ -118,6 +119,24 @@ def get_schedules(user):
     ).order_by(
             Schedule.lesson_number,
     ).all()
+
+
+def get_schedule_by_lesson_num(user, num):
+    current_day_of_week = datetime.datetime.now().weekday()
+    return session.query(
+        Schedule,
+    ).filter_by(
+        group_id=user.group.id,
+        day_of_week=current_day_of_week,
+        lesson_number=num,
+    ).filter(
+        or_(
+            Schedule.subgroup.is_(None),
+            Schedule.subgroup == user.subgroup,
+        ),
+    ).order_by(
+        Schedule.lesson_number,
+    ).first()
 
 
 def get_schedule_text(schedules) -> str:
@@ -137,6 +156,38 @@ def get_schedule_text(schedules) -> str:
             f"------------\n"
         )
     return schedule_text
+
+
+def get_next_lesson_text(schedule) -> str:
+    schedule_text = "<b>Следующая пара:</b>\n\n"
+
+    teacher_profile_url = "/"
+    teacher_profile = f"<a href='{teacher_profile_url}'>{schedule.teacher}</a>"
+
+    start_time, end_time = LESSON_TIMES.get(schedule.lesson_number, ("-", "-"))
+    schedule_text += (
+        f"{schedule.lesson_number} пара ({start_time} - {end_time})\n"
+        f"├Предмет: {schedule.subject}\n"
+        f"├Кабинет: {schedule.room}\n"
+        f"├Преподаватель: {teacher_profile}\n"
+        f"------------\n"
+    )
+    return schedule_text
+
+
+async def next_lesson_handler(context: ContextTypes.DEFAULT_TYPE, lesson_num: int):
+    # add filter
+    users = session.query(User).all()
+    for user in users:
+        schedule = get_schedule_by_lesson_num(user, lesson_num + 1)
+        if not schedule:
+            return
+        schedule_text = get_next_lesson_text(schedule)
+        await context.bot.send_message(
+            chat_id=user.id,
+            text=schedule_text,
+            parse_mode=ParseMode.HTML,
+        )
 
 
 async def daily_schedule_handler(context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -167,7 +218,17 @@ def main() -> None:
             tzinfo=pytz.timezone("Europe/Moscow"),
         ),
     )
-
+    for lesson_num, times in LESSON_TIMES.items():
+        hour, minute = [int(i) for i in times[1].split(":")]
+        job_queue.run_daily(
+            lambda x, y=lesson_num: next_lesson_handler(x, lesson_num=y),
+            datetime.time(
+                hour=hour,
+                minute=minute,
+                tzinfo=pytz.timezone("Europe/Moscow"),
+            ),
+            name=f"next_lesson_handler_{lesson_num}",
+        )
     conv_handler = ConversationHandler(
         entry_points=[
             CommandHandler("start", start),
