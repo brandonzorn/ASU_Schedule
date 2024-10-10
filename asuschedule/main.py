@@ -102,38 +102,41 @@ async def set_daily_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) 
     user.daily_notify = not user.daily_notify
     session.commit()
 
+
 def get_schedules(user):
     current_day_of_week = datetime.datetime.now().weekday()
-    schedules = session.query(Schedule).filter_by(
+    return session.query(Schedule).filter_by(
         group_id=user.group.id,
         day_of_week=current_day_of_week,
 
     ).filter(
         or_(
-            Schedule.subgroup == None,
+            Schedule.subgroup.is_(None),
             Schedule.subgroup == user.subgroup,
-        )
+        ),
     ).order_by(
-            Schedule.lesson_number
+            Schedule.lesson_number,
     ).all()
-    return schedules
 
 
 def get_schedule_text(schedules) -> str:
     current_day_of_week = datetime.datetime.now().weekday()
     schedule_text = f"<b>Расписание на {day_name[current_day_of_week]}:</b>\n\n"
     for schedule in schedules:
+
         teacher_profile_url = "/"
+        teacher_profile = f"<a href='{teacher_profile_url}'>{schedule.teacher}</a>"
+
         start_time, end_time = LESSON_TIMES.get(schedule.lesson_number, ("-", "-"))
         schedule_text += (
-            f"\t{schedule.lesson_number} пара ({start_time} - {end_time})\n"
-            f"\t├Предмет: {schedule.subject}\n"
-            f"\t├Кабинет: {schedule.room}\n"
-            f"\t├Преподаватель: "
-            f"<a href='{teacher_profile_url}'>{schedule.teacher}</a>\n"
+            f"{schedule.lesson_number} пара ({start_time} - {end_time})\n"
+            f"├Предмет: {schedule.subject}\n"
+            f"├Кабинет: {schedule.room}\n"
+            f"├Преподаватель: {teacher_profile}\n"
             f"------------\n"
         )
     return schedule_text
+
 
 async def daily_schedule_handler(context: ContextTypes.DEFAULT_TYPE) -> None:
     users = session.query(User).filter_by(daily_notify=True).all()
