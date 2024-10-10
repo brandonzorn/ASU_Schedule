@@ -4,6 +4,7 @@ import pytz
 
 from calendar import day_name
 
+from sqlalchemy import or_
 from telegram import (
     InlineKeyboardButton,
     InlineKeyboardMarkup,
@@ -65,9 +66,9 @@ async def info(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     reply_markup = InlineKeyboardMarkup(keyboard)
     await update.message.reply_text(
         f"""
-Username: {user.name}
-Group: {user.group.get_name()}
-Subgroup: {user.subgroup}
+Имя пользователя: {user.name}
+Группа: {user.group.get_name()}
+Подгруппа: {user.subgroup}
         """,
         reply_markup=reply_markup,
     )
@@ -77,29 +78,12 @@ async def schedule_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     user = await check_user_registration(update, context)
     if user is None:
         return
-
-    current_day_of_week = datetime.datetime.now().weekday()
-    schedules = session.query(Schedule).filter_by(
-        group_id=user.group.id,
-        day_of_week=current_day_of_week,
-    ).order_by(Schedule.lesson_number).all()
+    schedules = get_schedules(user)
 
     if not schedules:
         await update.message.reply_text("Расписание не найдено.")
         return
-    schedule_text = f"<b>Расписание на {day_name[current_day_of_week]}:</b>\n\n"
-    for schedule in schedules:
-        if schedule.subgroup is None or schedule.subgroup == user.subgroup:
-            teacher_profile_url = "/"
-            start_time, end_time = LESSON_TIMES.get(schedule.lesson_number, ("-", "-"))
-            schedule_text += (
-                f"\t{schedule.lesson_number} пара ({start_time} - {end_time})\n"
-                f"\t├Предмет: {schedule.subject}\n"
-                f"\t├Кабинет: {schedule.room}\n"
-                f"\t├Преподаватель: "
-                f"<a href='{teacher_profile_url}'>{schedule.teacher}</a>\n"
-                f"------------\n"
-            )
+    schedule_text = get_schedule_text(schedules)
     await update.message.reply_text(schedule_text, parse_mode="HTML")
 
 
@@ -118,37 +102,50 @@ async def set_daily_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) 
     user.daily_notify = not user.daily_notify
     session.commit()
 
+def get_schedules(user):
+    current_day_of_week = datetime.datetime.now().weekday()
+    schedules = session.query(Schedule).filter_by(
+        group_id=user.group.id,
+        day_of_week=current_day_of_week,
+
+    ).filter(
+        or_(
+            Schedule.subgroup == None,
+            Schedule.subgroup == user.subgroup,
+        )
+    ).order_by(
+            Schedule.lesson_number
+    ).all()
+    return schedules
+
+
+def get_schedule_text(schedules) -> str:
+    current_day_of_week = datetime.datetime.now().weekday()
+    schedule_text = f"<b>Расписание на {day_name[current_day_of_week]}:</b>\n\n"
+    for schedule in schedules:
+        teacher_profile_url = "/"
+        start_time, end_time = LESSON_TIMES.get(schedule.lesson_number, ("-", "-"))
+        schedule_text += (
+            f"\t{schedule.lesson_number} пара ({start_time} - {end_time})\n"
+            f"\t├Предмет: {schedule.subject}\n"
+            f"\t├Кабинет: {schedule.room}\n"
+            f"\t├Преподаватель: "
+            f"<a href='{teacher_profile_url}'>{schedule.teacher}</a>\n"
+            f"------------\n"
+        )
+    return schedule_text
 
 async def daily_schedule_handler(context: ContextTypes.DEFAULT_TYPE) -> None:
     users = session.query(User).filter_by(daily_notify=True).all()
     for user in users:
-        current_day_of_week = datetime.datetime.now().isoweekday()
-        schedules = session.query(Schedule).filter_by(
-            group_id=user.group.id,
-            day_of_week=current_day_of_week,
-        ).all()
-
+        schedules = get_schedules(user)
         if not schedules:
             await context.bot.send_message(
                 chat_id=user.id,
                 text="Расписание не найдено.",
             )
             return
-        schedule_text = f"<b>Расписание на {day_name[current_day_of_week - 1]}:</b>\n\n"
-        for schedule in schedules:
-            if schedule.subgroup is None or schedule.subgroup == user.subgroup:
-                teacher_profile_url = "/"
-                start_time, end_time = LESSON_TIMES.get(
-                    schedule.lesson_number, ("-", "-"),
-                )
-                schedule_text += (
-                    f"\t{schedule.lesson_number} пара ({start_time} - {end_time})\n"
-                    f"\t├Предмет: {schedule.subject}\n"
-                    f"\t├Кабинет: {schedule.room}\n"
-                    f"\t├Преподаватель: "
-                    f"<a href='{teacher_profile_url}'>{schedule.teacher}</a>\n"
-                    f"------------\n"
-                )
+        schedule_text = get_schedule_text(schedules)
         await context.bot.send_message(
             chat_id=user.id,
             text=schedule_text,
