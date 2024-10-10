@@ -1,7 +1,12 @@
+import logging
+
 import pandas as pd
 
 from database import session
 from models import Schedule, Group
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 dataframe1 = pd.read_excel("document.xlsx", sheet_name=None)
 
@@ -52,7 +57,7 @@ for val in combined_df.values:
         existing_schedule.teacher = teacher
         existing_schedule.room = room
         existing_schedule.subgroup = subgroup
-        print(
+        logger.info(
             f"Обновлено расписание для группы "
             f"ID {group.get_name()} и пары номер {lesson_number} в {num_day_of_week}.",
         )
@@ -68,7 +73,7 @@ for val in combined_df.values:
                 group_id=group.id,
             ),
         )
-        print(
+        logger.info(
             f"Добавлено новое расписание для группы "
             f"ID {group.get_name()} и пары номер {lesson_number} в {num_day_of_week}.",
         )
