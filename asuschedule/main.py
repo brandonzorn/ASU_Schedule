@@ -10,6 +10,7 @@ from telegram import (
     InlineKeyboardMarkup,
     Update,
 )
+from telegram.constants import ParseMode
 from telegram.ext import (
     Application,
     CallbackQueryHandler,
@@ -84,7 +85,7 @@ async def schedule_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -
         await update.message.reply_text("Расписание не найдено.")
         return
     schedule_text = get_schedule_text(schedules)
-    await update.message.reply_text(schedule_text, parse_mode="HTML")
+    await update.message.reply_text(schedule_text, parse_mode=ParseMode.HTML)
 
 
 async def set_daily_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -152,7 +153,7 @@ async def daily_schedule_handler(context: ContextTypes.DEFAULT_TYPE) -> None:
         await context.bot.send_message(
             chat_id=user.id,
             text=schedule_text,
-            parse_mode="HTML",
+            parse_mode=ParseMode.HTML,
         )
 
 
