@@ -5,7 +5,7 @@ import pandas as pd
 from database import session
 from models import Schedule, Group
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(f"ImportDocument{__name__}")
 logging.basicConfig(level=logging.INFO)
 
 dataframe1 = pd.read_excel("document.xlsx", sheet_name=None)
