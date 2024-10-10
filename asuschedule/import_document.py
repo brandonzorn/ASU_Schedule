@@ -59,7 +59,7 @@ for val in combined_df.values:
         existing_schedule.subgroup = subgroup
         logger.info(
             f"Обновлено расписание для группы "
-            f"ID {group.get_name()} и пары номер {lesson_number} в {num_day_of_week}.",
+            f"ID {group.get_name()} и пары номер {lesson_number} в {day_of_week}.",
         )
     else:
         session.add(
@@ -75,7 +75,7 @@ for val in combined_df.values:
         )
         logger.info(
             f"Добавлено новое расписание для группы "
-            f"ID {group.get_name()} и пары номер {lesson_number} в {num_day_of_week}.",
+            f"ID {group.get_name()} и пары номер {lesson_number} в {day_of_week}.",
         )
 
 
