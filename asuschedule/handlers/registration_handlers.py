@@ -8,7 +8,13 @@ COURSE, FACULTY, SPECIALITY, SUBGROUP = range(4)
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    courses = [course for (course,) in session.query(Group.course).distinct().all()]
+    courses = [
+        course for (course,) in session.query(
+            Group.course,
+        ).order_by(
+            Group.course,
+        ).distinct().all()
+    ]
     keyboard = [
         [
             InlineKeyboardButton(
@@ -25,8 +31,13 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 async def change_group(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     query = update.callback_query
     await query.answer()
-
-    courses = [course for (course,) in session.query(Group.course).distinct().all()]
+    courses = [
+        course for (course,) in session.query(
+            Group.course,
+        ).order_by(
+            Group.course,
+        ).distinct().all()
+    ]
     keyboard = [
         [
             InlineKeyboardButton(
