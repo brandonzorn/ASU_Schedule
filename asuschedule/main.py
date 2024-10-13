@@ -1,7 +1,5 @@
 import datetime
 
-import pytz
-
 from calendar import day_name
 
 from sqlalchemy import or_
@@ -20,7 +18,7 @@ from telegram.ext import (
 )
 
 from config import BOT_TOKEN
-from consts import LESSON_TIMES, WEEK_NAMES
+from consts import LESSON_TIMES, WEEK_NAMES, TIMEZONE
 from database import session
 from handlers.registration_handlers import (
     course_callback,
@@ -200,7 +198,7 @@ def main() -> None:
     job_queue.run_daily(
         daily_schedule_handler, datetime.time(
             hour=8,
-            tzinfo=pytz.timezone("Europe/Moscow"),
+            tzinfo=TIMEZONE,
         ),
     )
     for lesson_num, times in LESSON_TIMES.items():
@@ -210,7 +208,7 @@ def main() -> None:
             datetime.time(
                 hour=hour,
                 minute=minute,
-                tzinfo=pytz.timezone("Europe/Moscow"),
+                tzinfo=TIMEZONE,
             ),
             name=f"next_lesson_handler_{lesson_num}",
         )

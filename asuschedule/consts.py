@@ -1,3 +1,5 @@
+import pytz
+
 LESSON_TIMES = {
     0: ("7:15", "8:50"),
     1: ("09:00", "10:35"),
@@ -11,3 +13,6 @@ WEEK_NAMES = {
     0: "черная",
     1: "красная",
 }
+
+
+TIMEZONE = pytz.timezone("Europe/Moscow")

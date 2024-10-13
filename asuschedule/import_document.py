@@ -2,7 +2,7 @@ import logging
 
 import pandas as pd
 
-from asuschedule.consts import WEEK_NAMES
+from consts import WEEK_NAMES
 from database import session
 from models import Schedule, Group
 
