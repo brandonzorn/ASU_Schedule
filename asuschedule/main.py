@@ -112,6 +112,7 @@ def get_schedules(user):
         Schedule,
     ).filter_by(
         group_id=user.group.id,
+        is_even_week=is_even_week(),
         day_of_week=current_day_of_week,
     ).filter(
         or_(
@@ -130,6 +131,7 @@ def get_schedule_by_lesson_num(user, num):
     ).filter_by(
         group_id=user.group.id,
         day_of_week=current_day_of_week,
+        is_even_week=is_even_week(),
         lesson_number=num,
     ).filter(
         or_(
