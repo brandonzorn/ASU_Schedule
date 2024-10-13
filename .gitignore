@@ -1,5 +1,6 @@
 .idea
-.venv
+venv
+for_docker
 .env
 database.db
 groups.json

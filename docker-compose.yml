@@ -1,0 +1,13 @@
+name: "asu_schedule"
+
+services:
+  asu_schedule_bot:
+    build: .
+    container_name: asu_schedule_bot
+    env_file:
+      - ./.env
+    restart: always
+    volumes:
+      - ./for_docker/logs:/asuschedule/logs
+      - ./for_docker/sqlite:/asuschedule/sqlite
+
