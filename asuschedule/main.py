@@ -52,6 +52,12 @@ async def check_user_registration(
     return user
 
 
+def is_even_week() -> bool:
+    date = datetime.date.today()
+    week_number = date.isocalendar()[1]
+    return week_number % 2 == 0
+
+
 async def info(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user = await check_user_registration(update, context)
     if user is None:
@@ -137,7 +143,10 @@ def get_schedule_by_lesson_num(user, num):
 
 def get_schedule_text(schedules) -> str:
     current_day_of_week = datetime.datetime.now().weekday()
-    schedule_text = f"<b>Расписание на {day_name[current_day_of_week]}:</b>\n\n"
+    schedule_text = (
+        f"<b>Расписание на {day_name[current_day_of_week]} "
+        f"({WEEK_NAMES[int(is_even_week())]}):</b>\n\n"
+    )
     for schedule in schedules:
         schedule_text += f"{schedule.to_text()}------------\n"
     return schedule_text

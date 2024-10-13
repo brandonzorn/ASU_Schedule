@@ -54,6 +54,8 @@ class Schedule(Base):
     room = Column(String, nullable=True)
     group_id = Column(Integer, ForeignKey("groups.id"))
     subgroup = Column(Integer, nullable=True)
+    lesson_type = Column(String, nullable=True)
+    is_even_week = Column(Boolean, nullable=False)
 
     group = relationship("Group", back_populates="schedules")
 

@@ -2,6 +2,7 @@ import logging
 
 import pandas as pd
 
+from asuschedule.consts import WEEK_NAMES
 from database import session
 from models import Schedule, Group
 
@@ -33,6 +34,9 @@ for val in combined_df.values:
     subject = val[5]
     teacher = val[6] if isinstance(val[6], str) else None
     room = str(val[7]) if isinstance(val[7], (str, int)) else None
+    lesson_type = val[8] if isinstance(val[8], str) else None
+    is_even_week = bool(int(val[9]))
+
     num_day_of_week = days_of_week.get(day_of_week)
 
     group = session.query(Group).filter_by(course=course, speciality=speciality).first()
@@ -49,6 +53,7 @@ for val in combined_df.values:
         lesson_number=lesson_number,
         day_of_week=num_day_of_week,
         subgroup=subgroup,
+        is_even_week=is_even_week,
     ).first()
 
     if existing_schedule:
@@ -57,9 +62,11 @@ for val in combined_df.values:
         existing_schedule.teacher = teacher
         existing_schedule.room = room
         existing_schedule.subgroup = subgroup
+        existing_schedule.lesson_type = lesson_type
         logger.info(
             f"Обновлено расписание для группы "
-            f"ID {group.get_name()} и пары номер {lesson_number} в {day_of_week}.",
+            f"ID {group.get_name()} и пары номер {lesson_number} в {day_of_week}."
+            f"({WEEK_NAMES[int(is_even_week)]}).",
         )
     else:
         session.add(
@@ -71,11 +78,14 @@ for val in combined_df.values:
                 room=room,
                 subgroup=subgroup,
                 group_id=group.id,
+                lesson_type=lesson_type,
+                is_even_week=is_even_week,
             ),
         )
         logger.info(
             f"Добавлено новое расписание для группы "
-            f"ID {group.get_name()} и пары номер {lesson_number} в {day_of_week}.",
+            f"ID {group.get_name()} и пары номер {lesson_number} в {day_of_week} "
+            f"({WEEK_NAMES[int(is_even_week)]}).",
         )
 
 
