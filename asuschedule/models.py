@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
 from sqlalchemy.orm import declarative_base, relationship
 
-from asuschedule.consts import LESSON_TIMES
+from consts import LESSON_TIMES
 
 Base = declarative_base()
 
