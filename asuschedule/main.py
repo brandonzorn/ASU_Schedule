@@ -20,7 +20,7 @@ from telegram.ext import (
 )
 
 from config import BOT_TOKEN
-from consts import LESSON_TIMES
+from consts import LESSON_TIMES, WEEK_NAMES
 from database import session
 from handlers.registration_handlers import (
     course_callback,
@@ -66,11 +66,7 @@ async def info(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     await update.message.reply_text(
-        f"""
-Имя пользователя: {user.name}
-Группа: {user.group.get_name()}
-Подгруппа: {user.subgroup}
-        """,
+        user.to_text(),
         reply_markup=reply_markup,
     )
 
@@ -143,35 +139,13 @@ def get_schedule_text(schedules) -> str:
     current_day_of_week = datetime.datetime.now().weekday()
     schedule_text = f"<b>Расписание на {day_name[current_day_of_week]}:</b>\n\n"
     for schedule in schedules:
-
-        teacher_profile_url = "/"
-        teacher_profile = f"<a href='{teacher_profile_url}'>{schedule.teacher}</a>"
-
-        start_time, end_time = LESSON_TIMES.get(schedule.lesson_number, ("-", "-"))
-        schedule_text += (
-            f"{schedule.lesson_number} пара ({start_time} - {end_time})\n"
-            f"├Предмет: {schedule.subject}\n"
-            f"├Кабинет: {schedule.room}\n"
-            f"├Преподаватель: {teacher_profile}\n"
-            f"------------\n"
-        )
+        schedule_text += f"{schedule.to_text()}------------\n"
     return schedule_text
 
 
 def get_next_lesson_text(schedule) -> str:
     schedule_text = "<b>Следующая пара:</b>\n\n"
-
-    teacher_profile_url = "/"
-    teacher_profile = f"<a href='{teacher_profile_url}'>{schedule.teacher}</a>"
-
-    start_time, end_time = LESSON_TIMES.get(schedule.lesson_number, ("-", "-"))
-    schedule_text += (
-        f"{schedule.lesson_number} пара ({start_time} - {end_time})\n"
-        f"├Предмет: {schedule.subject}\n"
-        f"├Кабинет: {schedule.room}\n"
-        f"├Преподаватель: {teacher_profile}\n"
-        f"------------\n"
-    )
+    schedule_text += f"{schedule.to_text()}------------\n"
     return schedule_text
 
 

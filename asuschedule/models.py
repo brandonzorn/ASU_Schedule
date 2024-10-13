@@ -1,6 +1,8 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
 from sqlalchemy.orm import declarative_base, relationship
 
+from asuschedule.consts import LESSON_TIMES
+
 Base = declarative_base()
 
 
@@ -30,6 +32,13 @@ class User(Base):
 
     group = relationship("Group", back_populates="users")
 
+    def to_text(self) -> str:
+        return (
+            f"Имя пользователя: {self.name}\n"
+            f"Группа: {self.group.get_name()}\n"
+            f"Подгруппа: {self.subgroup}"
+        )
+
 
 Group.users = relationship("User", order_by=User.id, back_populates="group")
 
@@ -47,6 +56,18 @@ class Schedule(Base):
     subgroup = Column(Integer, nullable=True)
 
     group = relationship("Group", back_populates="schedules")
+
+    def to_text(self) -> str:
+        teacher_profile_url = "/"
+        teacher_profile = f"<a href='{teacher_profile_url}'>{self.teacher}</a>"
+        start_time, end_time = LESSON_TIMES.get(self.lesson_number, ("-", "-"))
+        return (
+            f"{self.lesson_number} пара ({start_time} - {end_time})\n"
+            f"├Предмет: {self.subject}\n"
+            f"├Формат: {self.lesson_type}\n"
+            f"├Кабинет: {self.room}\n"
+            f"├Преподаватель: {teacher_profile}\n"
+        )
 
 
 Group.schedules = relationship("Schedule", order_by=Schedule.id, back_populates="group")
