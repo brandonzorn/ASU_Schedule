@@ -1,6 +1,7 @@
 .idea
 venv
 for_docker
+sqlite
 .env
 database.db
 groups.json
