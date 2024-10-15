@@ -1,6 +1,17 @@
 name: "asu_schedule"
 
 services:
+  postgres:
+    image: postgres:17
+    container_name: postgres
+    environment:
+      POSTGRES_DB: ${DATABASE_NAME}
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+    restart: always
+    volumes:
+      - ./for_docker/postgres_data:/var/lib/postgresql/data
+
   asu_schedule_bot:
     build: .
     container_name: asu_schedule_bot
@@ -10,4 +21,5 @@ services:
     volumes:
       - ./for_docker/logs:/asuschedule/logs
       - ./for_docker/sqlite:/asuschedule/sqlite
-
+    depends_on:
+      - postgres
