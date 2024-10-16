@@ -160,7 +160,7 @@ def get_next_lesson_text(schedule) -> str:
 
 async def next_lesson_handler(context: ContextTypes.DEFAULT_TYPE, lesson_num: int):
     # add filter
-    users = session.query(User).all()
+    users = session.query(User).filter_by(daily_notify=True).all()
     for user in users:
         schedule = get_schedule_by_lesson_num(user, lesson_num + 1)
         if not schedule:
