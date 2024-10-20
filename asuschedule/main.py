@@ -50,8 +50,7 @@ async def check_user_registration(
     return user
 
 
-def is_even_week() -> bool:
-    date = datetime.date.today()
+def is_even_week(date) -> bool:
     week_number = date.isocalendar()[1]
     return week_number % 2 == 0
 
@@ -105,13 +104,13 @@ async def set_daily_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) 
 
 
 def get_schedules(user):
-    current_day_of_week = datetime.datetime.now().weekday()
+    date = datetime.date.today()
     return session.query(
         Schedule,
     ).filter_by(
         group_id=user.group.id,
-        is_even_week=is_even_week(),
-        day_of_week=current_day_of_week,
+        is_even_week=is_even_week(date),
+        day_of_week=date.weekday(),
     ).filter(
         or_(
             Schedule.subgroup.is_(None),
@@ -123,13 +122,13 @@ def get_schedules(user):
 
 
 def get_schedule_by_lesson_num(user, num):
-    current_day_of_week = datetime.datetime.now().weekday()
+    date = datetime.date.today()
     return session.query(
         Schedule,
     ).filter_by(
         group_id=user.group.id,
-        day_of_week=current_day_of_week,
-        is_even_week=is_even_week(),
+        is_even_week=is_even_week(date),
+        day_of_week=date.weekday(),
         lesson_number=num,
     ).filter(
         or_(
@@ -142,10 +141,10 @@ def get_schedule_by_lesson_num(user, num):
 
 
 def get_schedule_text(schedules) -> str:
-    current_day_of_week = datetime.datetime.now().weekday()
+    date = datetime.date.today()
     schedule_text = (
-        f"<b>Расписание на {day_name[current_day_of_week]} "
-        f"({WEEK_NAMES[int(is_even_week())]}):</b>\n\n"
+        f"<b>Расписание на {day_name[date.weekday()]} "
+        f"({WEEK_NAMES[int(is_even_week(date))]}):</b>\n\n"
     )
     for schedule in schedules:
         schedule_text += f"{schedule.to_text()}------------\n"
