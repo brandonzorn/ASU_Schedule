@@ -142,6 +142,7 @@ async def subgroup_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) 
         session.add(new_user)
         await query.edit_message_text(f"Регистрация завершена! Привет, {name}.")
     else:
+        user.subgroup = subgroup
         user.group_id = group.id
         await query.edit_message_text("Ваша группа изменена.")
     session.commit()
