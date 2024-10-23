@@ -104,9 +104,12 @@ async def next_lesson_handler(context: ContextTypes.DEFAULT_TYPE, lesson_num: in
         )
 
 
-async def daily_schedule_handler(context: ContextTypes.DEFAULT_TYPE) -> None:
+async def daily_schedule_handler(context: ContextTypes.DEFAULT_TYPE, next_day=False) -> None:
     users = session.query(User).filter_by(daily_notify=True).all()
-    date = datetime.date.today()
+    date = (
+        datetime.date.today() + datetime.timedelta(days=1)
+        if next_day else datetime.date.today()
+    )
     for user in users:
         schedules = get_schedules(user, date.weekday(), is_even_week(date))
         if not schedules:
@@ -130,6 +133,12 @@ def main() -> None:
     job_queue.run_daily(
         daily_schedule_handler, datetime.time(
             hour=8,
+            tzinfo=TIMEZONE,
+        ),
+    )
+    job_queue.run_daily(
+        lambda *args: daily_schedule_handler(*args, next_day=True), datetime.time(
+            hour=20,
             tzinfo=TIMEZONE,
         ),
     )
