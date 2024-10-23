@@ -26,4 +26,3 @@ def get_schedule_text_by_day(schedules, day: int, even_week) -> str:
     for schedule in schedules:
         schedule_text += f"{schedule.to_text()}------------\n"
     return schedule_text
-

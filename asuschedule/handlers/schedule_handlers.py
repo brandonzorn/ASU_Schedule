@@ -76,7 +76,7 @@ async def select_day(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int 
 
     schedules_text = get_schedule_text_by_day(schedules, day, is_even_week)
 
-    await query.edit_message_text(text=schedules_text, parse_mode=ParseMode.HTML,)
+    await query.edit_message_text(text=schedules_text, parse_mode=ParseMode.HTML)
     return ConversationHandler.END
 
 
