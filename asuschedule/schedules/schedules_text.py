@@ -1,0 +1,19 @@
+from consts import WEEK_NAMES, DAY_NAMES
+from utils import is_even_week
+
+
+def get_next_lesson_text(schedule) -> str:
+    schedule_text = "<b>Следующая пара:</b>\n\n"
+    schedule_text += f"{schedule.to_text()}------------\n"
+    return schedule_text
+
+
+def get_schedule_text(schedules, date) -> str:
+    schedule_text = (
+        f"<b>Расписание на {DAY_NAMES[date.weekday()]} "
+        f"({WEEK_NAMES[int(is_even_week(date))]}):</b>\n\n"
+    )
+    for schedule in schedules:
+        schedule_text += f"{schedule.to_text()}------------\n"
+    return schedule_text
+

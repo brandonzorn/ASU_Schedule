@@ -1,0 +1,2 @@
+from .registration_handlers import registration_handler
+from .schedule_handlers import schedules_table_handler

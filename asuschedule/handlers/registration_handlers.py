@@ -1,5 +1,14 @@
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import ContextTypes, ConversationHandler
+from telegram import (
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    Update,
+)
+from telegram.ext import (
+    ContextTypes,
+    ConversationHandler,
+    CommandHandler,
+    CallbackQueryHandler,
+)
 
 from database import session
 from models import Group, User
@@ -152,3 +161,20 @@ async def subgroup_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) 
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     await update.message.reply_text("Регистрация отменена.")
     return ConversationHandler.END
+
+
+registration_handler = ConversationHandler(
+    entry_points=[
+        CommandHandler("start", start),
+        CallbackQueryHandler(change_group, pattern="change_group"),
+    ],
+    states={
+        COURSE: [CallbackQueryHandler(course_callback)],
+        FACULTY: [CallbackQueryHandler(faculty_callback)],
+        SPECIALITY: [CallbackQueryHandler(speciality_callback)],
+        SUBGROUP: [CallbackQueryHandler(subgroup_callback)],
+    },
+    fallbacks=[
+        CommandHandler("cancel", cancel),
+    ],
+)

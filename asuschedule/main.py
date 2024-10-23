@@ -1,8 +1,5 @@
 import datetime
 
-from calendar import day_name
-
-from sqlalchemy import or_
 from telegram import (
     InlineKeyboardButton,
     InlineKeyboardMarkup,
@@ -11,48 +8,19 @@ from telegram import (
 from telegram.constants import ParseMode
 from telegram.ext import (
     Application,
-    CallbackQueryHandler,
     CommandHandler,
     ContextTypes,
-    ConversationHandler,
 )
 
 from config import BOT_TOKEN
-from consts import LESSON_TIMES, WEEK_NAMES, TIMEZONE
+from consts import LESSON_TIMES, TIMEZONE
 from database import session
-from handlers.registration_handlers import (
-    course_callback,
-    faculty_callback,
-    speciality_callback,
-    subgroup_callback,
-    start,
-    cancel,
-    COURSE,
-    FACULTY,
-    SPECIALITY,
-    SUBGROUP,
-    change_group,
-)
-from models import User, Schedule
+from handlers import schedules_table_handler, registration_handler
+from models import User
 
-
-async def check_user_registration(
-        update: Update, context: ContextTypes.DEFAULT_TYPE,
-) -> User | None:
-    """Проверяет, зарегистрирован ли пользователь. Возвращает объект User или None."""
-    user_id = update.effective_user.id
-    user = session.query(User).filter_by(id=user_id).first()
-    if not user:
-        await update.message.reply_text(
-            "Вы не зарегистрированы. Пожалуйста, начните с команды /start.",
-        )
-        return None
-    return user
-
-
-def is_even_week(date) -> bool:
-    week_number = date.isocalendar()[1]
-    return week_number % 2 == 0
+from schedules.schedules_text import get_next_lesson_text, get_schedule_text
+from schedules.schedules import get_schedule_by_lesson_num, get_schedules
+from utils import check_user_registration, is_even_week
 
 
 async def info(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -78,12 +46,31 @@ async def schedule_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     user = await check_user_registration(update, context)
     if user is None:
         return
-    schedules = get_schedules(user)
+
+    date = datetime.date.today()
+    schedules = get_schedules(user, date.weekday(), is_even_week(date))
 
     if not schedules:
         await update.message.reply_text("Расписание не найдено.")
         return
-    schedule_text = get_schedule_text(schedules)
+    schedule_text = get_schedule_text(schedules, date)
+    await update.message.reply_text(schedule_text, parse_mode=ParseMode.HTML)
+
+
+async def next_day_schedule_handler(
+        update: Update,
+        context: ContextTypes.DEFAULT_TYPE,
+) -> None:
+    user = await check_user_registration(update, context)
+    if user is None:
+        return
+    date = datetime.date.today() + datetime.timedelta(days=1)
+    schedules = get_schedules(user, date.weekday(), is_even_week(date))
+
+    if not schedules:
+        await update.message.reply_text("Расписание не найдено.")
+        return
+    schedule_text = get_schedule_text(schedules, date)
     await update.message.reply_text(schedule_text, parse_mode=ParseMode.HTML)
 
 
@@ -103,60 +90,6 @@ async def set_daily_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) 
     session.commit()
 
 
-def get_schedules(user):
-    date = datetime.date.today()
-    return session.query(
-        Schedule,
-    ).filter_by(
-        group_id=user.group.id,
-        is_even_week=is_even_week(date),
-        day_of_week=date.weekday(),
-    ).filter(
-        or_(
-            Schedule.subgroup.is_(None),
-            Schedule.subgroup == user.subgroup,
-        ),
-    ).order_by(
-            Schedule.lesson_number,
-    ).all()
-
-
-def get_schedule_by_lesson_num(user, num):
-    date = datetime.date.today()
-    return session.query(
-        Schedule,
-    ).filter_by(
-        group_id=user.group.id,
-        is_even_week=is_even_week(date),
-        day_of_week=date.weekday(),
-        lesson_number=num,
-    ).filter(
-        or_(
-            Schedule.subgroup.is_(None),
-            Schedule.subgroup == user.subgroup,
-        ),
-    ).order_by(
-        Schedule.lesson_number,
-    ).first()
-
-
-def get_schedule_text(schedules) -> str:
-    date = datetime.date.today()
-    schedule_text = (
-        f"<b>Расписание на {day_name[date.weekday()]} "
-        f"({WEEK_NAMES[int(is_even_week(date))]}):</b>\n\n"
-    )
-    for schedule in schedules:
-        schedule_text += f"{schedule.to_text()}------------\n"
-    return schedule_text
-
-
-def get_next_lesson_text(schedule) -> str:
-    schedule_text = "<b>Следующая пара:</b>\n\n"
-    schedule_text += f"{schedule.to_text()}------------\n"
-    return schedule_text
-
-
 async def next_lesson_handler(context: ContextTypes.DEFAULT_TYPE, lesson_num: int):
     users = session.query(User).filter_by(daily_notify=True).all()
     for user in users:
@@ -173,15 +106,16 @@ async def next_lesson_handler(context: ContextTypes.DEFAULT_TYPE, lesson_num: in
 
 async def daily_schedule_handler(context: ContextTypes.DEFAULT_TYPE) -> None:
     users = session.query(User).filter_by(daily_notify=True).all()
+    date = datetime.date.today()
     for user in users:
-        schedules = get_schedules(user)
+        schedules = get_schedules(user, date.weekday(), is_even_week(date))
         if not schedules:
             await context.bot.send_message(
                 chat_id=user.id,
                 text="Расписание не найдено.",
             )
             return
-        schedule_text = get_schedule_text(schedules)
+        schedule_text = get_schedule_text(schedules, date)
         await context.bot.send_message(
             chat_id=user.id,
             text=schedule_text,
@@ -210,24 +144,14 @@ def main() -> None:
             ),
             name=f"next_lesson_handler_{lesson_num}",
         )
-    conv_handler = ConversationHandler(
-        entry_points=[
-            CommandHandler("start", start),
-            CallbackQueryHandler(change_group, pattern="change_group"),
-        ],
-        states={
-            COURSE: [CallbackQueryHandler(course_callback)],
-            FACULTY: [CallbackQueryHandler(faculty_callback)],
-            SPECIALITY: [CallbackQueryHandler(speciality_callback)],
-            SUBGROUP: [CallbackQueryHandler(subgroup_callback)],
-        },
-        fallbacks=[CommandHandler("cancel", cancel)],
-    )
+
     application.add_handler(CommandHandler("info", info))
     application.add_handler(CommandHandler("schedule", schedule_handler))
+    application.add_handler(CommandHandler("schedule_next", next_day_schedule_handler))
     application.add_handler(CommandHandler("daily", set_daily_handler))
 
-    application.add_handler(conv_handler)
+    application.add_handler(registration_handler)
+    application.add_handler(schedules_table_handler)
     application.run_polling()
 
 
