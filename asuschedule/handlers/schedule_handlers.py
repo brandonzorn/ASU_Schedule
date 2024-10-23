@@ -3,6 +3,7 @@ from telegram import (
     InlineKeyboardMarkup,
     Update,
 )
+from telegram.constants import ParseMode
 from telegram.ext import (
     ContextTypes,
     ConversationHandler,
@@ -13,6 +14,8 @@ from telegram.ext import (
 from consts import WEEK_NAMES, DAY_NAMES
 from database import session
 from models import Schedule
+from schedules.schedules import get_schedules
+from schedules.schedules_text import get_schedule_text_by_day
 
 from utils import check_user_registration
 
@@ -27,7 +30,6 @@ async def schedules_table(
         update: Update,
         context: ContextTypes.DEFAULT_TYPE,
 ) -> int | None:
-    query = update.callback_query
     user = await check_user_registration(update, context)
     if user is None:
         return None
@@ -58,17 +60,23 @@ async def schedules_table(
     return SELECT_DAY
 
 
-async def select_day(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+async def select_day(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int | None:
     query = update.callback_query
     await query.answer()
 
+    user = await check_user_registration(update, context)
+    if user is None:
+        return None
+
     context.user_data["selected_day"] = query.data
+    day_data = query.data.split("_")
+    day, is_even_week = (int(day_data[0]), bool(int(day_data[1])))
 
-    day, is_even_week = query.data.split("_")
-    # schedules =
-    # schedules_text = get_schedule_text()
+    schedules = get_schedules(user, day, is_even_week)
 
-    await query.edit_message_text(text="text")
+    schedules_text = get_schedule_text_by_day(schedules, day, is_even_week)
+
+    await query.edit_message_text(text=schedules_text, parse_mode=ParseMode.HTML,)
     return ConversationHandler.END
 
 

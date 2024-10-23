@@ -7,7 +7,7 @@ from models import Schedule
 from utils import is_even_week
 
 
-def get_schedules(user, weekday, even_week):
+def get_schedules(user, weekday: int, even_week: bool):
     return session.query(
         Schedule,
     ).filter_by(

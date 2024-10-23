@@ -17,3 +17,13 @@ def get_schedule_text(schedules, date) -> str:
         schedule_text += f"{schedule.to_text()}------------\n"
     return schedule_text
 
+
+def get_schedule_text_by_day(schedules, day: int, even_week) -> str:
+    schedule_text = (
+        f"<b>Расписание на {DAY_NAMES[day]} "
+        f"({WEEK_NAMES[int(even_week)]}):</b>\n\n"
+    )
+    for schedule in schedules:
+        schedule_text += f"{schedule.to_text()}------------\n"
+    return schedule_text
+
