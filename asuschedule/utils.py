@@ -1,10 +1,21 @@
 from functools import wraps
 
-from telegram import Update
+from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import ContextTypes
 
 from database import session
 from models import User
+
+
+def get_main_keyboard():
+    return ReplyKeyboardMarkup(
+        [
+            ["Расписание на сегодня", "Расписание на завтра"],
+            ["Ежедневная рассылка", "Информация"],
+        ],
+        resize_keyboard=True,
+        one_time_keyboard=False,
+    )
 
 
 def require_registration(func):

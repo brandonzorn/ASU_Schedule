@@ -12,6 +12,7 @@ from telegram.ext import (
 
 from database import session
 from models import Group, User
+from utils import get_main_keyboard
 
 COURSE, FACULTY, SPECIALITY, SUBGROUP = range(4)
 
@@ -149,11 +150,19 @@ async def subgroup_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) 
             group_id=group.id,
         )
         session.add(new_user)
-        await query.edit_message_text(f"Регистрация завершена! Привет, {name}.")
+        await query.edit_message_text(
+            f"Регистрация завершена! Привет, {name}.",
+        )
     else:
         user.subgroup = subgroup
         user.group_id = group.id
-        await query.edit_message_text("Ваша группа изменена.")
+        await query.edit_message_text(
+            "Ваша группа изменена.",
+        )
+    await query.message.reply_text(
+        "Выберите одну из опций:",
+        reply_markup=get_main_keyboard(),
+    )
     session.commit()
     return ConversationHandler.END
 

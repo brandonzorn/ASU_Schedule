@@ -11,6 +11,8 @@ from telegram.ext import (
     Application,
     CommandHandler,
     ContextTypes,
+    MessageHandler,
+    filters,
 )
 
 from config import BOT_TOKEN
@@ -21,7 +23,7 @@ from models import User
 
 from schedules.schedules_text import get_next_lesson_text, get_schedule_text
 from schedules.schedules import get_schedule_by_lesson_num, get_schedules
-from utils import is_even_week, require_registration
+from utils import is_even_week, require_registration, get_main_keyboard
 
 __all__ = []
 
@@ -76,10 +78,17 @@ async def schedule_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     schedules = get_schedules(user, date.weekday(), is_even_week(date))
 
     if not schedules:
-        await update.message.reply_text("Расписание не найдено.")
+        await update.message.reply_text(
+            "Расписание не найдено.",
+            reply_markup=get_main_keyboard(),
+        )
         return
     schedule_text = get_schedule_text(schedules, date)
-    await update.message.reply_text(schedule_text, parse_mode=ParseMode.HTML)
+    await update.message.reply_text(
+        schedule_text,
+        parse_mode=ParseMode.HTML,
+        reply_markup=get_main_keyboard(),
+    )
 
 
 @require_registration
@@ -93,10 +102,17 @@ async def next_day_schedule_handler(
     schedules = get_schedules(user, date.weekday(), is_even_week(date))
 
     if not schedules:
-        await update.message.reply_text("Расписание не найдено.")
+        await update.message.reply_text(
+            "Расписание не найдено.",
+            reply_markup=get_main_keyboard(),
+        )
         return
     schedule_text = get_schedule_text(schedules, date)
-    await update.message.reply_text(schedule_text, parse_mode=ParseMode.HTML)
+    await update.message.reply_text(
+        schedule_text,
+        parse_mode=ParseMode.HTML,
+        reply_markup=get_main_keyboard(),
+    )
 
 
 @require_registration
@@ -106,10 +122,12 @@ async def set_daily_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) 
     if user.daily_notify:
         await update.message.reply_text(
             "Ежедневная рассылка выключена",
+            reply_markup=get_main_keyboard(),
         )
     else:
         await update.message.reply_text(
             "Ежедневная рассылка включена",
+            reply_markup=get_main_keyboard(),
         )
     user.daily_notify = not user.daily_notify
     session.commit()
@@ -154,6 +172,21 @@ async def daily_schedule_handler(
         )
 
 
+async def handle_keyboard(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_text = update.message.text
+    command = {
+        "Расписание на сегодня": schedule_handler,
+        "Расписание на завтра": next_day_schedule_handler,
+        "Ежедневная рассылка": set_daily_handler,
+        "Информация": info,
+    }.get(user_text)
+
+    if command:
+        await command(update, context)
+    else:
+        await update.message.reply_text("Неизвестная команда. Используйте кнопки.")
+
+
 def main() -> None:
     application = Application.builder().token(BOT_TOKEN).build()
 
@@ -187,6 +220,10 @@ def main() -> None:
     application.add_handler(CommandHandler("schedule", schedule_handler))
     application.add_handler(CommandHandler("schedule_next", next_day_schedule_handler))
     application.add_handler(CommandHandler("daily", set_daily_handler))
+
+    application.add_handler(MessageHandler(
+        filters.TEXT & ~filters.COMMAND, handle_keyboard),
+    )
 
     application.add_handler(registration_handler)
     application.add_handler(schedules_table_handler)
