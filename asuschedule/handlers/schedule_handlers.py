@@ -17,7 +17,8 @@ from models import Schedule
 from schedules.schedules import get_schedules
 from schedules.schedules_text import get_schedule_text_by_day
 
-from utils import check_user_registration
+from models import User
+from utils import require_registration
 
 SELECT_DAY, SHOW_SCHEDULE = range(2)
 
@@ -26,13 +27,11 @@ async def go_back(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     return await schedules_table(update, context)
 
 
+@require_registration
 async def schedules_table(
         update: Update,
         context: ContextTypes.DEFAULT_TYPE,
 ) -> int | None:
-    user = await check_user_registration(update, context)
-    if user is None:
-        return None
     days = [
         day for (day,) in session.query(
             Schedule.day_of_week,
@@ -64,9 +63,7 @@ async def select_day(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int 
     query = update.callback_query
     await query.answer()
 
-    user = await check_user_registration(update, context)
-    if user is None:
-        return None
+    user = session.query(User).filter_by(id=update.effective_user.id).first()
 
     context.user_data["selected_day"] = query.data
     day_data = query.data.split("_")
