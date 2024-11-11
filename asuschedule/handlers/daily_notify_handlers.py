@@ -52,6 +52,7 @@ async def cancel(update, context):
 
 daily_time_selection_handler = ConversationHandler(
     entry_points=[
+        CommandHandler("notify_time", keyboard_time),
         MessageHandler(
             filters.TEXT & filters.Regex(r"(?i)^Изменить время рассылки$"),
             keyboard_time,
