@@ -53,6 +53,20 @@ async def info(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     )
 
 
+async def message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user = await check_user_registration(update, context)
+    if not user.is_staff():
+        await update.message.reply_text("У вас нет доступа к этой команде.")
+    if context.args:
+        msg = " ".join(context.args)
+        users = session.query(User).filter_by(daily_notify=True).all()
+        for user in users:
+            await context.bot.send_message(chat_id=user.id, text=msg)
+        await update.message.reply_text("Сообщение отправлено.")
+    else:
+        await update.message.reply_text("Пожалуйста, укажите сообщение после команды.")
+
+
 async def schedule_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user = await check_user_registration(update, context)
     if user is None:
@@ -106,6 +120,7 @@ async def next_lesson_handler(context: ContextTypes.DEFAULT_TYPE, lesson_num: in
     for user in users:
         schedule = get_schedule_by_lesson_num(user, lesson_num + 1)
         if not schedule:
+            logger.info(f"Schedule for user {user.id} & lesson {lesson_num} not found")
             return
         schedule_text = get_next_lesson_text(schedule)
         await context.bot.send_message(
@@ -168,6 +183,7 @@ def main() -> None:
         )
 
     application.add_handler(CommandHandler("info", info))
+    application.add_handler(CommandHandler("message", message))
     application.add_handler(CommandHandler("schedule", schedule_handler))
     application.add_handler(CommandHandler("schedule_next", next_day_schedule_handler))
     application.add_handler(CommandHandler("daily", set_daily_handler))

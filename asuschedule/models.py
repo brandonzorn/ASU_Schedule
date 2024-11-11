@@ -32,6 +32,9 @@ class User(Base):
 
     group = relationship("Group", back_populates="users")
 
+    def is_staff(self) -> bool:
+        return bool(self.is_teacher or self.is_admin)
+
     def to_text(self) -> str:
         return (
             f"Имя пользователя: {self.name}\n"
