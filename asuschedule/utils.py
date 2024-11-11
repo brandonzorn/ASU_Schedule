@@ -22,3 +22,9 @@ async def check_user_registration(
 def is_even_week(date) -> bool:
     week_number = date.isocalendar()[1]
     return week_number % 2 == 0
+
+
+__all__ = [
+    check_user_registration,
+    is_even_week,
+]

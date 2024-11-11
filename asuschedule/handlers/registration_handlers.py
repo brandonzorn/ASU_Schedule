@@ -178,3 +178,8 @@ registration_handler = ConversationHandler(
         CommandHandler("cancel", cancel),
     ],
 )
+
+
+__all__ = [
+    registration_handler,
+]

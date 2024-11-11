@@ -87,3 +87,7 @@ schedules_table_handler = ConversationHandler(
     },
     fallbacks=[CommandHandler("schedule_days", schedules_table)],
 )
+
+__all__ = [
+    schedules_table_handler,
+]

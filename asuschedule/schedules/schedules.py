@@ -41,3 +41,9 @@ def get_schedule_by_lesson_num(user, num):
     ).order_by(
         Schedule.lesson_number,
     ).first()
+
+
+__all__ = [
+    get_schedules,
+    get_schedule_by_lesson_num,
+]

@@ -73,3 +73,10 @@ class Schedule(Base):
 
 
 Group.schedules = relationship("Schedule", order_by=Schedule.id, back_populates="group")
+
+
+__all__ = [
+    Group,
+    User,
+    Schedule,
+]

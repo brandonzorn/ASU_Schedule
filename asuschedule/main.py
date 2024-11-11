@@ -1,4 +1,5 @@
 import datetime
+import logging
 
 from telegram import (
     InlineKeyboardButton,
@@ -21,6 +22,16 @@ from models import User
 from schedules.schedules_text import get_next_lesson_text, get_schedule_text
 from schedules.schedules import get_schedule_by_lesson_num, get_schedules
 from utils import check_user_registration, is_even_week
+
+__all__ = []
+
+
+logging.basicConfig(
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    level=logging.INFO,
+)
+logging.getLogger("httpx").setLevel(logging.WARNING)
+logger = logging.getLogger(__name__)
 
 
 async def info(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -104,7 +115,9 @@ async def next_lesson_handler(context: ContextTypes.DEFAULT_TYPE, lesson_num: in
         )
 
 
-async def daily_schedule_handler(context: ContextTypes.DEFAULT_TYPE, next_day=False) -> None:
+async def daily_schedule_handler(
+        context: ContextTypes.DEFAULT_TYPE, next_day=False,
+) -> None:
     users = session.query(User).filter_by(daily_notify=True).all()
     date = (
         datetime.date.today() + datetime.timedelta(days=1)
