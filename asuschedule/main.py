@@ -2,8 +2,6 @@ import datetime
 import logging
 
 from telegram import (
-    InlineKeyboardButton,
-    InlineKeyboardMarkup,
     Update,
 )
 from telegram.constants import ParseMode
@@ -39,18 +37,8 @@ logger = logging.getLogger(__name__)
 @require_registration
 async def info(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user = session.query(User).filter_by(id=update.effective_user.id).first()
-    keyboard = [
-        [
-            InlineKeyboardButton(
-                "Изменить группу",
-                callback_data="change_group",
-            ),
-        ],
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
     await update.message.reply_text(
         user.to_text(),
-        reply_markup=reply_markup,
     )
 
 
@@ -234,8 +222,11 @@ def main() -> None:
     # Staff commands
     application.add_handler(CommandHandler("users_list", users_list))
 
-    application.add_handler(MessageHandler(
-        filters.TEXT & ~filters.COMMAND, handle_keyboard),
+    application.add_handler(
+        MessageHandler(
+            filters.TEXT & ~filters.COMMAND & ~filters.Regex(r"(?i)^Изменить группу$"),
+            handle_keyboard,
+        ),
     )
 
     application.add_handler(registration_handler)

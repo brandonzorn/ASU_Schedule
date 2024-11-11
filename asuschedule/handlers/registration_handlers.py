@@ -8,6 +8,8 @@ from telegram.ext import (
     ConversationHandler,
     CommandHandler,
     CallbackQueryHandler,
+    MessageHandler,
+    filters,
 )
 
 from database import session
@@ -160,7 +162,7 @@ async def subgroup_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) 
             "Ваша группа изменена.",
         )
     await query.message.reply_text(
-        "Выберите одну из опций:",
+        "Теперь вам доступны команды бота!",
         reply_markup=get_main_keyboard(),
     )
     session.commit()
@@ -175,7 +177,7 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 registration_handler = ConversationHandler(
     entry_points=[
         CommandHandler("start", start),
-        CallbackQueryHandler(change_group, pattern="change_group"),
+        MessageHandler(filters.TEXT & filters.Regex(r"(?i)^Изменить группу$"), start),
     ],
     states={
         COURSE: [CallbackQueryHandler(course_callback)],
