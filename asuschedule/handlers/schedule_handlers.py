@@ -23,10 +23,6 @@ from utils import require_registration
 SELECT_DAY, SHOW_SCHEDULE = range(2)
 
 
-async def go_back(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    return await schedules_table(update, context)
-
-
 @require_registration
 async def schedules_table(
         update: Update,

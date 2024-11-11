@@ -29,6 +29,7 @@ class User(Base):
     is_teacher = Column(Boolean, default=False, nullable=True)
     is_admin = Column(Boolean, default=False, nullable=True)
     daily_notify = Column(Boolean, default=False, nullable=True)
+    notify_time = Column(Integer, default=8, nullable=False)  # Время рассылки (8 или 20)
 
     group = relationship("Group", back_populates="users")
 
