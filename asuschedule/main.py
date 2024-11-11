@@ -21,7 +21,7 @@ from models import User
 
 from schedules.schedules_text import get_next_lesson_text, get_schedule_text
 from schedules.schedules import get_schedule_by_lesson_num, get_schedules
-from utils import check_user_registration, is_even_week
+from utils import is_even_week, require_registration
 
 __all__ = []
 
@@ -34,10 +34,9 @@ logging.getLogger("httpx").setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
 
 
+@require_registration
 async def info(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    user = await check_user_registration(update, context)
-    if user is None:
-        return
+    user = session.query(User).filter_by(id=update.effective_user.id).first()
     keyboard = [
         [
             InlineKeyboardButton(
@@ -53,8 +52,9 @@ async def info(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     )
 
 
+@require_registration
 async def message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user = await check_user_registration(update, context)
+    user = session.query(User).filter_by(id=update.effective_user.id).first()
     if not user.is_staff():
         await update.message.reply_text("У вас нет доступа к этой команде.")
         return
@@ -68,10 +68,9 @@ async def message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Пожалуйста, укажите сообщение после команды.")
 
 
+@require_registration
 async def schedule_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    user = await check_user_registration(update, context)
-    if user is None:
-        return
+    user = session.query(User).filter_by(id=update.effective_user.id).first()
 
     date = datetime.date.today()
     schedules = get_schedules(user, date.weekday(), is_even_week(date))
@@ -83,13 +82,13 @@ async def schedule_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     await update.message.reply_text(schedule_text, parse_mode=ParseMode.HTML)
 
 
+@require_registration
 async def next_day_schedule_handler(
         update: Update,
         context: ContextTypes.DEFAULT_TYPE,
 ) -> None:
-    user = await check_user_registration(update, context)
-    if user is None:
-        return
+    user = session.query(User).filter_by(id=update.effective_user.id).first()
+
     date = datetime.date.today() + datetime.timedelta(days=1)
     schedules = get_schedules(user, date.weekday(), is_even_week(date))
 
@@ -100,10 +99,10 @@ async def next_day_schedule_handler(
     await update.message.reply_text(schedule_text, parse_mode=ParseMode.HTML)
 
 
+@require_registration
 async def set_daily_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    user = await check_user_registration(update, context)
-    if user is None:
-        return
+    user = session.query(User).filter_by(id=update.effective_user.id).first()
+
     if user.daily_notify:
         await update.message.reply_text(
             "Ежедневная рассылка выключена",

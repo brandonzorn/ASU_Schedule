@@ -1,3 +1,5 @@
+from functools import wraps
+
 from telegram import Update
 from telegram.ext import ContextTypes
 
@@ -5,18 +7,19 @@ from database import session
 from models import User
 
 
-async def check_user_registration(
-        update: Update, context: ContextTypes.DEFAULT_TYPE,
-) -> User | None:
-    """Проверяет, зарегистрирован ли пользователь. Возвращает объект User или None."""
-    user_id = update.effective_user.id
-    user = session.query(User).filter_by(id=user_id).first()
-    if not user:
-        await update.message.reply_text(
-            "Вы не зарегистрированы. Пожалуйста, начните с команды /start.",
-        )
-        return None
-    return user
+def require_registration(func):
+    @wraps(func)
+    async def wrapper(
+            update: Update, context: ContextTypes.DEFAULT_TYPE, *args, **kwargs,
+    ):
+        user = session.query(User).filter_by(id=update.effective_user.id).first()
+        if user is None:
+            await update.message.reply_text(
+                "Вы не зарегистрированы. Пожалуйста, начните с команды /start.",
+            )
+            return None
+        return await func(update, context, *args, **kwargs)
+    return wrapper
 
 
 def is_even_week(date) -> bool:
@@ -25,6 +28,6 @@ def is_even_week(date) -> bool:
 
 
 __all__ = [
-    check_user_registration,
+    require_registration,
     is_even_week,
 ]
