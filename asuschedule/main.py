@@ -53,6 +53,7 @@ async def info(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         reply_markup=reply_markup,
     )
 
+
 @require_registration
 async def users_list(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = session.query(User).filter_by(id=update.effective_user.id).first()
@@ -61,6 +62,7 @@ async def users_list(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     users = session.query(User).all()
     await update.message.reply_text("\n".join([user.to_text() for user in users]))
+
 
 @require_registration
 async def message(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -228,6 +230,9 @@ def main() -> None:
     application.add_handler(CommandHandler("schedule", schedule_handler))
     application.add_handler(CommandHandler("schedule_next", next_day_schedule_handler))
     application.add_handler(CommandHandler("daily", set_daily_handler))
+
+    # Staff commands
+    application.add_handler(CommandHandler("users_list", users_list))
 
     application.add_handler(MessageHandler(
         filters.TEXT & ~filters.COMMAND, handle_keyboard),
