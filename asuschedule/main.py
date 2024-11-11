@@ -57,9 +57,9 @@ async def message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = await check_user_registration(update, context)
     if not user.is_staff():
         await update.message.reply_text("У вас нет доступа к этой команде.")
-    if context.args:
+    elif context.args:
         msg = " ".join(context.args)
-        users = session.query(User).filter_by(daily_notify=True).all()
+        users = session.query(User).all()
         for user in users:
             await context.bot.send_message(chat_id=user.id, text=msg)
         await update.message.reply_text("Сообщение отправлено.")
