@@ -179,7 +179,7 @@ def main() -> None:
             hour=8,
             tzinfo=TIMEZONE,
         ),
-        data={"time": 8},
+        data={"notify_time": 8},
         name="daily_notify_8",
     )
     job_queue.run_daily(
@@ -188,7 +188,7 @@ def main() -> None:
             hour=20,
             tzinfo=TIMEZONE,
         ),
-        data={"time": 20},
+        data={"notify_time": 20},
         name="daily_notify_20",
     )
     for lesson_num, times in LESSON_TIMES.items():
