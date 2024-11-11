@@ -53,6 +53,14 @@ async def info(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         reply_markup=reply_markup,
     )
 
+@require_registration
+async def users_list(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user = session.query(User).filter_by(id=update.effective_user.id).first()
+    if not user.is_staff():
+        await update.message.reply_text("У вас нет доступа к этой команде.")
+        return
+    users = session.query(User).all()
+    await update.message.reply_text("\n".join([user.to_text() for user in users]))
 
 @require_registration
 async def message(update: Update, context: ContextTypes.DEFAULT_TYPE):
