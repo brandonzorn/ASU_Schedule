@@ -42,6 +42,7 @@ class User(Base):
             f"Группа: {self.group.get_name()}\n"
             f"Подгруппа: {self.subgroup}\n"
             f"Ежедневная рассылка: {'Включена' if self.daily_notify else 'Выключена'}\n"
+            f"Время рассылки: {self.notify_time}:00\n"
             f"Статус: {'Персонал' if self.is_staff() else 'Пользователь'}"
         )
 
