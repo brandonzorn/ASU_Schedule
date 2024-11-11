@@ -49,7 +49,9 @@ async def users_list(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("У вас нет доступа к этой команде.")
         return
     users = session.query(User).all()
-    await update.message.reply_text("\n".join([user.to_text() for user in users]))
+    await update.message.reply_text(
+        "\n------------\n".join([user.to_text() for user in users]),
+    )
 
 
 @require_registration
