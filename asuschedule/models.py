@@ -39,7 +39,9 @@ class User(Base):
         return (
             f"Имя пользователя: {self.name}\n"
             f"Группа: {self.group.get_name()}\n"
-            f"Подгруппа: {self.subgroup}"
+            f"Подгруппа: {self.subgroup}\n"
+            f"Ежедневная рассылка: {'Включена' if self.daily_notify else 'Выключена'}\n"
+            f"Статус: {'Персонал' if self.is_staff() else 'Пользователь'}"
         )
 
 
