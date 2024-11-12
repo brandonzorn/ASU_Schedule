@@ -6,16 +6,16 @@ services:
       POSTGRES_DB: ${DATABASE_NAME}
       POSTGRES_USER: ${DATABASE_USER}
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
-    restart: always
+    restart: unless-stopped
     volumes:
-      - ./for_docker/postgres_data:/var/lib/postgresql/data
+      - ./etc_asuschedule/postgres_data:/var/lib/postgresql/data
 
   asu_schedule_bot:
     build: .
     container_name: asu_schedule_bot
     env_file:
       - ./.env
-    restart: always
+    restart: unless-stopped
     volumes:
       - ./etc_asuschedule/logs:/asuschedule/logs
       - ./etc_asuschedule/sqlite:/asuschedule/sqlite
