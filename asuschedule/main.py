@@ -119,13 +119,14 @@ async def next_lesson_handler(context: ContextTypes.DEFAULT_TYPE):
         schedule = get_schedule_by_lesson_num(user, lesson_num + 1)
         if not schedule:
             logger.info(f"Schedule for user {user.id} & lesson {lesson_num} not found")
-            return
+            continue
         schedule_text = get_next_lesson_text(schedule)
         await context.bot.send_message(
             chat_id=user.id,
             text=schedule_text,
             parse_mode=ParseMode.HTML,
         )
+        logger.info(f"Sent schedule for {user.id} & lesson {lesson_num}")
 
 
 async def daily_schedule_handler(context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -145,28 +146,15 @@ async def daily_schedule_handler(context: ContextTypes.DEFAULT_TYPE) -> None:
                 chat_id=user.id,
                 text="Расписание не найдено.",
             )
-            return
+            logger.info(f"Daily schedule for user {user.id} not found")
+            continue
         schedule_text = get_schedule_text(schedules, date)
         await context.bot.send_message(
             chat_id=user.id,
             text=schedule_text,
             parse_mode=ParseMode.HTML,
         )
-
-
-async def handle_keyboard(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_text = update.message.text
-    command = {
-        "Расписание на сегодня": schedule_handler,
-        "Расписание на завтра": next_day_schedule_handler,
-        "Ежедневная рассылка": set_daily_handler,
-        "Информация": info,
-    }.get(user_text)
-
-    if command:
-        await command(update, context)
-    else:
-        await update.message.reply_text("Неизвестная команда. Используйте кнопки.")
+        logger.info(f"Sent daily schedule for {user.id}")
 
 
 def main() -> None:
@@ -209,19 +197,34 @@ def main() -> None:
     application.add_handler(CommandHandler("schedule_next", next_day_schedule_handler))
     application.add_handler(CommandHandler("daily", set_daily_handler))
 
+    application.add_handler(
+        MessageHandler(
+            filters.TEXT & filters.Regex(r"(?i)^Информация$"),
+            info,
+        ),
+    )
+    application.add_handler(
+        MessageHandler(
+            filters.TEXT & filters.Regex(r"(?i)^Расписание на сегодня$"),
+            schedule_handler,
+        ),
+    )
+    application.add_handler(
+        MessageHandler(
+            filters.TEXT & filters.Regex(r"(?i)^Расписание на завтра$"),
+            next_day_schedule_handler,
+        ),
+    )
+    application.add_handler(
+        MessageHandler(
+            filters.TEXT & filters.Regex(r"(?i)^Ежедневная рассылка$"),
+            set_daily_handler,
+        ),
+    )
+
     # Staff commands
     application.add_handler(message_handler)
     application.add_handler(users_list_handler)
-
-    application.add_handler(
-        MessageHandler(
-            filters.TEXT
-            & ~filters.COMMAND
-            & ~filters.Regex(r"(?i)^Изменить группу$")
-            & ~filters.Regex(r"(?i)^Изменить время рассылки$"),
-            handle_keyboard,
-        ),
-    )
 
     application.add_handler(registration_handler)
     application.add_handler(schedules_table_handler)
