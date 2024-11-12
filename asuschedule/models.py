@@ -67,15 +67,13 @@ class Schedule(Base):
     group = relationship("Group", back_populates="schedules")
 
     def to_text(self) -> str:
-        teacher_profile_url = "/"
-        teacher_profile = f"<a href='{teacher_profile_url}'>{self.teacher or 'не указано'}</a>"
         start_time, end_time = LESSON_TIMES.get(self.lesson_number, ("-", "-"))
         return (
             f"{self.lesson_number} пара ({start_time} - {end_time})\n"
             f"├Предмет: {self.subject or 'не указано'}\n"
             f"├Формат: {self.lesson_type or 'не указано'}\n"
             f"├Кабинет: {self.room or 'не указано'}\n"
-            f"├Преподаватель: {teacher_profile}\n"
+            f"├Преподаватель: {self.teacher or 'не указано'}\n"
         )
 
 
