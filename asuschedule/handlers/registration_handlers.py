@@ -16,33 +16,28 @@ from database import session
 from models import Group, User
 from utils import get_main_keyboard
 
-COURSE, FACULTY, SPECIALITY, SUBGROUP = range(4)
+FACULTY, COURSE, SPECIALITY, SUBGROUP = range(4)
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    courses = [
-        course for (course,) in session.query(
-            Group.course,
-        ).order_by(
-            Group.course,
-        ).distinct().all()
-    ]
+    faculties = [faculty for (faculty,) in session.query(Group.faculty).distinct().all()]
     keyboard = [
         [
             InlineKeyboardButton(
-                f"{course} курс", callback_data=f"{course}",
-            ) for course in courses
+                f"{faculty}", callback_data=f"{faculty}",
+            ) for faculty in faculties
         ],
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
-    await update.message.reply_text("Выберите курс:", reply_markup=reply_markup)
-    return COURSE
+    await update.message.reply_text("Выберите факультет:", reply_markup=reply_markup)
+    return FACULTY
 
 
-async def change_group(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+async def faculty_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     query = update.callback_query
     await query.answer()
+    context.user_data["faculty"] = query.data
     courses = [
         course for (course,) in session.query(
             Group.course,
@@ -67,25 +62,6 @@ async def course_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     query = update.callback_query
     await query.answer()
     context.user_data["course"] = query.data
-
-    faculties = [faculty for (faculty,) in session.query(Group.faculty).distinct().all()]
-    keyboard = [
-        [
-            InlineKeyboardButton(
-                f"{faculty}", callback_data=f"{faculty}",
-            ) for faculty in faculties
-        ],
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-
-    await query.edit_message_text("Выберите факультет:", reply_markup=reply_markup)
-    return FACULTY
-
-
-async def faculty_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    query = update.callback_query
-    await query.answer()
-    context.user_data["faculty"] = query.data
 
     specialities = [
         speciality for (speciality,) in session.query(
@@ -180,8 +156,8 @@ registration_handler = ConversationHandler(
         MessageHandler(filters.TEXT & filters.Regex(r"(?i)^Изменить группу$"), start),
     ],
     states={
-        COURSE: [CallbackQueryHandler(course_callback)],
         FACULTY: [CallbackQueryHandler(faculty_callback)],
+        COURSE: [CallbackQueryHandler(course_callback)],
         SPECIALITY: [CallbackQueryHandler(speciality_callback)],
         SUBGROUP: [CallbackQueryHandler(subgroup_callback)],
     },
