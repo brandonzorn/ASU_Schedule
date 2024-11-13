@@ -26,7 +26,11 @@ from handlers import (
 from models import User
 
 from schedules.schedules_text import get_next_lesson_text, get_schedule_text
-from schedules.schedules import get_schedule_by_lesson_num, get_schedules
+from schedules.schedules import (
+    get_schedule_by_lesson_num,
+    get_schedules,
+    get_schedules_by_teacher,
+)
 from utils import is_even_week, require_registration, get_main_keyboard
 
 __all__ = []
@@ -157,6 +161,31 @@ async def daily_schedule_handler(context: ContextTypes.DEFAULT_TYPE) -> None:
         logger.info(f"Sent daily schedule for {user.id}")
 
 
+async def schedule_teacher_handler(
+        update: Update, context: ContextTypes.DEFAULT_TYPE,
+) -> None:
+    if len(context.args) < 1:
+        await update.message.reply_text("Пожалуйста, укажите имя преподавателя.")
+        return
+
+    teacher_name = context.args[0]
+    schedules = get_schedules_by_teacher(teacher_name)
+
+    if not schedules:
+        await update.message.reply_text(
+            f"Расписание с преподавателем '{teacher_name}' не найдено.",
+        )
+        return
+    date = datetime.date.today()
+
+    schedule_text = get_schedule_text(schedules, date)
+    await update.message.reply_text(
+        schedule_text,
+        parse_mode=ParseMode.HTML,
+        reply_markup=get_main_keyboard(),
+    )
+
+
 def main() -> None:
     application = Application.builder().token(BOT_TOKEN).build()
 
@@ -196,6 +225,7 @@ def main() -> None:
     application.add_handler(CommandHandler("schedule", schedule_handler))
     application.add_handler(CommandHandler("schedule_next", next_day_schedule_handler))
     application.add_handler(CommandHandler("daily", set_daily_handler))
+    application.add_handler(CommandHandler("schedule_teacher", schedule_teacher_handler))
 
     application.add_handler(
         MessageHandler(
