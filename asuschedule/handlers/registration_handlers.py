@@ -27,6 +27,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
                 f"{faculty}", callback_data=f"{faculty}",
             ) for faculty in faculties
         ],
+        [InlineKeyboardButton("Отмена", callback_data="cancel")],
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -36,6 +37,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 async def faculty_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     query = update.callback_query
+    if query.data == "cancel":
+        return await cancel(update, context)
     await query.answer()
     context.user_data["faculty"] = query.data
     courses = [
@@ -51,6 +54,7 @@ async def faculty_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -
                 f"{course} курс", callback_data=f"{course}",
             ) for course in courses
         ],
+        [InlineKeyboardButton("Отмена", callback_data="cancel")],
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -60,6 +64,8 @@ async def faculty_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -
 
 async def course_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     query = update.callback_query
+    if query.data == "cancel":
+        return await cancel(update, context)
     await query.answer()
     context.user_data["course"] = query.data
 
@@ -76,6 +82,7 @@ async def course_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
                 f"{speciality}", callback_data=f"{speciality}",
             ) for speciality in specialities
         ],
+        [InlineKeyboardButton("Отмена", callback_data="cancel")],
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -85,6 +92,8 @@ async def course_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 
 async def speciality_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     query = update.callback_query
+    if query.data == "cancel":
+        return await cancel(update, context)
     await query.answer()
     context.user_data["speciality"] = query.data
 
@@ -93,6 +102,7 @@ async def speciality_callback(update: Update, context: ContextTypes.DEFAULT_TYPE
             InlineKeyboardButton("1 Подгруппа", callback_data="1"),
             InlineKeyboardButton("2 Подгруппа", callback_data="2"),
         ],
+        [InlineKeyboardButton("Отмена", callback_data="cancel")],
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -102,6 +112,8 @@ async def speciality_callback(update: Update, context: ContextTypes.DEFAULT_TYPE
 
 async def subgroup_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     query = update.callback_query
+    if query.data == "cancel":
+        return await cancel(update, context)
     await query.answer()
 
     user_id = query.from_user.id
@@ -146,7 +158,12 @@ async def subgroup_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) 
 
 
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    await update.message.reply_text("Регистрация отменена.")
+    if update.message:
+        await update.message.reply_text("Регистрация отменена.")
+    elif update.callback_query:
+        await update.callback_query.edit_message_text("Регистрация отменена.")
+        await update.callback_query.answer()
+
     return ConversationHandler.END
 
 
@@ -163,6 +180,7 @@ registration_handler = ConversationHandler(
     },
     fallbacks=[
         CommandHandler("cancel", cancel),
+        CallbackQueryHandler(cancel, pattern="^cancel$"),
     ],
 )
 
