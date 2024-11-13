@@ -47,6 +47,9 @@ for val in combined_df.values:
             speciality=speciality,
         )
         session.add(group)
+        logger.info(
+            f"Добавлена новая группа {group.get_name()}",
+        )
 
     existing_schedule = session.query(Schedule).filter_by(
         group_id=group.id,
