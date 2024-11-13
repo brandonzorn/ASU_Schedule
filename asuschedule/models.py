@@ -62,6 +62,7 @@ class Schedule(Base):
     group_id = Column(Integer, ForeignKey("groups.id"))
     subgroup = Column(Integer, nullable=True)
     lesson_type = Column(String, nullable=True)
+    # 0: черная, 1: красная
     is_even_week = Column(Boolean, nullable=False)
 
     group = relationship("Group", back_populates="schedules")
