@@ -13,9 +13,15 @@ async def users_list(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("У вас нет доступа к этой команде.")
         return
     users = session.query(User).all()
-    await update.message.reply_text(
-        "\n------------\n".join([user.to_text() for user in users]),
-    )
+    chunk_size = 15
+    user_chunks = [users[i:i + chunk_size] for i in range(0, len(users), chunk_size)]
+
+    for chunk in user_chunks:
+        await update.message.reply_text(
+            "\n------------\n".join(
+                [user.to_text() for user in chunk],
+            ),
+        )
 
 
 @require_registration
