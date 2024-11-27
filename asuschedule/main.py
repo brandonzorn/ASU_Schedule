@@ -45,7 +45,7 @@ logger = logging.getLogger(__name__)
 
 
 @require_registration
-async def info(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def info_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user = session.query(User).filter_by(id=update.effective_user.id).first()
     await update.message.reply_text(
         user.to_text(),
@@ -221,7 +221,7 @@ def main() -> None:
             name=f"next_lesson_handler_{lesson_num}",
         )
 
-    application.add_handler(CommandHandler("info", info))
+    application.add_handler(CommandHandler("info", info_handler))
     application.add_handler(CommandHandler("schedule", schedule_handler))
     application.add_handler(CommandHandler("schedule_next", next_day_schedule_handler))
     application.add_handler(CommandHandler("daily", set_daily_handler))
@@ -230,7 +230,7 @@ def main() -> None:
     application.add_handler(
         MessageHandler(
             filters.TEXT & filters.Regex(r"(?i)^Информация$"),
-            info,
+            info_handler,
         ),
     )
     application.add_handler(
