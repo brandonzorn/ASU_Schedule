@@ -13,10 +13,10 @@ from telegram.ext import (
 )
 
 from database import session
-from models import Group, User
+from models import Group, User, Schedule
 from utils import get_main_keyboard
 
-FACULTY, COURSE, SPECIALITY, SUBGROUP = range(4)
+FACULTY, COURSE, SPECIALITY, SUBGROUP, TEACHER = range(5)
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -54,6 +54,7 @@ async def faculty_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -
                 f"{course} курс", callback_data=f"{course}",
             ) for course in courses
         ],
+        [InlineKeyboardButton("Преподаватель", callback_data="teacher")],
         [InlineKeyboardButton("Отмена", callback_data="cancel")],
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
@@ -138,6 +139,7 @@ async def subgroup_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) 
             name=name,
             subgroup=subgroup,
             group_id=group.id,
+            is_teacher=False,
         )
         session.add(new_user)
         await query.edit_message_text(
@@ -146,8 +148,76 @@ async def subgroup_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) 
     else:
         user.subgroup = subgroup
         user.group_id = group.id
+        user.is_teacher = False
         await query.edit_message_text(
             "Ваша группа изменена.",
+        )
+    await query.message.reply_text(
+        "Теперь вам доступны команды бота!",
+        reply_markup=get_main_keyboard(),
+    )
+    session.commit()
+    return ConversationHandler.END
+
+
+async def teacher_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    query = update.callback_query
+    if query.data == "cancel":
+        return await cancel(update, context)
+    await query.answer()
+
+    teachers = [
+        teacher for (teacher,) in session.query(
+            Schedule.teacher,
+        ).filter(
+            Schedule.teacher.isnot(None),
+            ~Schedule.teacher.contains("/"),
+        ).distinct().order_by(Schedule.teacher).all()
+    ]
+
+    keyboard = [
+        [
+            InlineKeyboardButton(f"{teacher}", callback_data=f"{teacher}"),
+        ] for teacher in teachers
+    ]
+    keyboard.append([InlineKeyboardButton("Отмена", callback_data="cancel")])
+    reply_markup = InlineKeyboardMarkup(keyboard)
+
+    await query.edit_message_text("Выберите преподавателя:", reply_markup=reply_markup)
+    return TEACHER
+
+
+async def finalize_registration(
+        update: Update, context: ContextTypes.DEFAULT_TYPE,
+) -> int:
+    query = update.callback_query
+    if query.data == "cancel":
+        return await cancel(update, context)
+    await query.answer()
+
+    user_id = query.from_user.id
+    name = query.from_user.first_name
+    username = query.from_user.username
+    teacher_name = query.data
+
+    user = session.query(User).filter_by(id=user_id).first()
+    if not user:
+        new_user = User(
+            id=user_id,
+            username=username,
+            name=name,
+            is_teacher=True,
+            teacher_name=teacher_name,
+        )
+        session.add(new_user)
+        await query.edit_message_text(
+            f"Регистрация завершена! Преподаватель: {teacher_name}.",
+        )
+    else:
+        user.teacher_name = teacher_name
+        user.is_teacher = True
+        await query.edit_message_text(
+            f"Ваша информация обновлена. Преподаватель: {teacher_name}.",
         )
     await query.message.reply_text(
         "Теперь вам доступны команды бота!",
@@ -174,9 +244,13 @@ registration_handler = ConversationHandler(
     ],
     states={
         FACULTY: [CallbackQueryHandler(faculty_callback)],
-        COURSE: [CallbackQueryHandler(course_callback)],
+        COURSE: [
+            CallbackQueryHandler(course_callback, pattern=r"^\d+$"),
+            CallbackQueryHandler(teacher_callback, pattern="^teacher$"),
+        ],
         SPECIALITY: [CallbackQueryHandler(speciality_callback)],
         SUBGROUP: [CallbackQueryHandler(subgroup_callback)],
+        TEACHER: [CallbackQueryHandler(finalize_registration)],
     },
     fallbacks=[
         CommandHandler("cancel", cancel),

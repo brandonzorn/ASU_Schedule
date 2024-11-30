@@ -24,26 +24,37 @@ class User(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     username = Column(String, nullable=True)
     name = Column(String, nullable=False)
-    subgroup = Column(Integer, nullable=False)  # Подгруппа (1 или 2)
+    subgroup = Column(Integer, nullable=True)  # Подгруппа (1 или 2)
     group_id = Column(Integer, ForeignKey("groups.id"))
     is_teacher = Column(Boolean, default=False, nullable=True)
     is_admin = Column(Boolean, default=False, nullable=True)
     daily_notify = Column(Boolean, default=False, nullable=True)
     notify_time = Column(Integer, default=8, nullable=False)  # Время рассылки (8 или 20)
+    teacher_name = Column(String, nullable=True)
 
     group = relationship("Group", back_populates="users")
 
     def is_staff(self) -> bool:
         return bool(self.is_teacher or self.is_admin)
 
+    def _get_status_str(self):
+        if self.is_teacher:
+            return "Преподаватель"
+        if self.is_admin:
+            return "Персонал"
+        return "Пользователь"
+
+    def _get_group_name_str(self):
+        return self.teacher_name if self.is_teacher else self.group.get_name()
+
     def to_text(self) -> str:
         return (
             f"Имя пользователя: {self.name}\n"
-            f"Группа: {self.group.get_name()}\n"
+            f"Группа: {self._get_group_name_str()}\n"
             f"Подгруппа: {self.subgroup}\n"
             f"Ежедневная рассылка: {'Включена' if self.daily_notify else 'Выключена'}\n"
             f"Время рассылки: {self.notify_time}:00\n"
-            f"Статус: {'Персонал' if self.is_staff() else 'Пользователь'}"
+            f"Статус: {self._get_status_str()}"
         )
 
 

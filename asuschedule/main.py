@@ -26,11 +26,7 @@ from handlers import (
 from models import User
 
 from schedules.schedules_text import get_next_lesson_text, get_schedule_text
-from schedules.schedules import (
-    get_schedule_by_lesson_num,
-    get_schedules,
-    get_schedules_by_teacher,
-)
+from schedules.schedules import get_schedules
 from utils import is_even_week, require_registration, get_main_keyboard
 
 __all__ = []
@@ -117,20 +113,23 @@ async def set_daily_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) 
 
 async def next_lesson_handler(context: ContextTypes.DEFAULT_TYPE):
     lesson_num = context.job.data["lesson_num"]
+    date = datetime.date.today()
 
     users = session.query(User).filter_by(daily_notify=True).all()
     for user in users:
-        schedule = get_schedule_by_lesson_num(user, lesson_num + 1)
-        if not schedule:
-            logger.info(f"Schedule for user {user.id} & lesson {lesson_num} not found")
+        schedules = get_schedules(
+            user, date.weekday(),
+            is_even_week(date),
+            lesson_number=lesson_num,
+        )
+        if not schedules:
             continue
-        schedule_text = get_next_lesson_text(schedule)
+        schedule_text = get_next_lesson_text(schedules[0])
         await context.bot.send_message(
             chat_id=user.id,
             text=schedule_text,
             parse_mode=ParseMode.HTML,
         )
-        logger.info(f"Sent schedule for {user.id} & lesson {lesson_num}")
 
 
 async def daily_schedule_handler(context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -150,7 +149,6 @@ async def daily_schedule_handler(context: ContextTypes.DEFAULT_TYPE) -> None:
                 chat_id=user.id,
                 text="Расписание не найдено.",
             )
-            logger.info(f"Daily schedule for user {user.id} not found")
             continue
         schedule_text = get_schedule_text(schedules, date)
         await context.bot.send_message(
@@ -158,32 +156,6 @@ async def daily_schedule_handler(context: ContextTypes.DEFAULT_TYPE) -> None:
             text=schedule_text,
             parse_mode=ParseMode.HTML,
         )
-        logger.info(f"Sent daily schedule for {user.id}")
-
-
-async def schedule_teacher_handler(
-        update: Update, context: ContextTypes.DEFAULT_TYPE,
-) -> None:
-    if len(context.args) < 1:
-        await update.message.reply_text("Пожалуйста, укажите имя преподавателя.")
-        return
-
-    teacher_name = context.args[0]
-    schedules = get_schedules_by_teacher(teacher_name)
-
-    if not schedules:
-        await update.message.reply_text(
-            f"Расписание с преподавателем '{teacher_name}' не найдено.",
-        )
-        return
-    date = datetime.date.today()
-
-    schedule_text = get_schedule_text(schedules, date)
-    await update.message.reply_text(
-        schedule_text,
-        parse_mode=ParseMode.HTML,
-        reply_markup=get_main_keyboard(),
-    )
 
 
 def main() -> None:
@@ -225,7 +197,6 @@ def main() -> None:
     application.add_handler(CommandHandler("schedule", schedule_handler))
     application.add_handler(CommandHandler("schedule_next", next_day_schedule_handler))
     application.add_handler(CommandHandler("daily", set_daily_handler))
-    application.add_handler(CommandHandler("schedule_teacher", schedule_teacher_handler))
 
     application.add_handler(
         MessageHandler(
