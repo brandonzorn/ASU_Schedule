@@ -3,9 +3,7 @@ from utils import is_even_week
 
 
 def get_next_lesson_text(schedule) -> str:
-    schedule_text = "<b>Следующая пара:</b>\n\n"
-    schedule_text += f"{schedule.to_text()}------------\n"
-    return schedule_text
+    return f"<b>Следующая пара:</b>\n\n{schedule.to_text()}"
 
 
 def get_schedule_text(schedules, date) -> str:
