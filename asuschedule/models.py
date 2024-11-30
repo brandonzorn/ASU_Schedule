@@ -46,17 +46,19 @@ class User(Base):
 
     def to_text(self) -> str:
         if self.is_teacher:
-            return (
+            base_str = (
                 f"Имя пользователя: {self.name}\n"
                 f"Преподаватель: {self.teacher_name}\n"
-                f"Ежедневная рассылка: {'Включена' if self.daily_notify else 'Выключена'}\n"
-                f"Время рассылки: {self.notify_time}:00\n"
-                f"Статус: {self._get_status_str()}"
+
             )
-        return (
-            f"Имя пользователя: {self.name}\n"
-            f"Группа: {self.group.get_name()}\n"
-            f"Подгруппа: {self.subgroup}\n"
+        else:
+            base_str = (
+                f"Имя пользователя: {self.name}\n"
+                f"Группа: {self.group.get_name()}\n"
+                f"Подгруппа: {self.subgroup}\n"
+            )
+
+        return base_str + (
             f"Ежедневная рассылка: {'Включена' if self.daily_notify else 'Выключена'}\n"
             f"Время рассылки: {self.notify_time}:00\n"
             f"Статус: {self._get_status_str()}"
