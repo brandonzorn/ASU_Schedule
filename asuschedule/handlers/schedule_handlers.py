@@ -67,7 +67,7 @@ async def select_day(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int 
 
     schedules = get_schedules(user, day, is_even_week)
     if not schedules:
-        await update.message.reply_text("Расписание не найдено.")
+        await query.edit_message_text("Расписание не найдено.")
         return ConversationHandler.END
 
     schedules_text = get_schedule_text_by_day(schedules, day, is_even_week)
