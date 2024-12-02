@@ -120,7 +120,7 @@ async def next_lesson_handler(context: ContextTypes.DEFAULT_TYPE):
         schedules = get_schedules(
             user, date.weekday(),
             is_even_week(date),
-            lesson_number=lesson_num,
+            lesson_number=lesson_num + 1,
         )
         if not schedules:
             continue
