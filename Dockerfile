@@ -1,9 +1,9 @@
-FROM python:3.12.8-slim
+FROM python:3.12.7-slim
 
 RUN apt update
 
 COPY ./requirements /requirements
-RUN pip install -r requirements/prod.txt
+RUN pip install --no-cache-dir -r requirements/prod.txt
 RUN rm -rf requirements
 
 COPY ./asuschedule /asuschedule/
