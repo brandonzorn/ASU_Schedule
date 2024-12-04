@@ -1,15 +1,4 @@
 services:
-  postgres:
-    image: postgres:17
-    container_name: postgres
-    environment:
-      POSTGRES_DB: ${DATABASE_NAME}
-      POSTGRES_USER: ${DATABASE_USER}
-      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
-    restart: unless-stopped
-    volumes:
-      - ./etc_asuschedule/postgres_data:/var/lib/postgresql/data
-
   asu_schedule_bot:
     build: .
     container_name: asu_schedule_bot
@@ -19,5 +8,3 @@ services:
     volumes:
       - ./etc_asuschedule/logs:/asuschedule/logs
       - ./etc_asuschedule/sqlite:/asuschedule/sqlite
-    depends_on:
-      - postgres
