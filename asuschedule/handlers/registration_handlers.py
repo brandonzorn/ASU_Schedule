@@ -79,6 +79,7 @@ async def course_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
             Group.speciality,
         ).filter(
             Group.course == context.user_data["course"],
+            Group.faculty.ilike(f"%{context.user_data['faculty']}%"),
         ).distinct().all()
     ]
     keyboard = [
@@ -130,10 +131,10 @@ async def subgroup_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) 
     faculty = context.user_data["faculty"]
     speciality = context.user_data["speciality"]
 
-    group = session.query(Group).filter_by(
-        course=course,
-        faculty=faculty,
-        speciality=speciality,
+    group = session.query(Group).filter(
+        Group.course == course,
+        Group.faculty.ilike(f"%{faculty}%"),
+        Group.speciality.ilike(f"%{speciality}%"),
     ).first()
     user = session.query(User).filter_by(id=user_id).first()
     if not user:
