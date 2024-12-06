@@ -36,14 +36,19 @@ for val in combined_df.values:
     room = str(val[7]) if isinstance(val[7], (str, int)) else None
     lesson_type = val[8] if isinstance(val[8], str) else None
     is_even_week = bool(int(val[9]))
+    faculty = val[10]
 
     num_day_of_week = days_of_week.get(day_of_week)
 
-    group = session.query(Group).filter_by(course=course, speciality=speciality).first()
+    group = session.query(Group).filter_by(
+        course=course,
+        speciality=speciality,
+        faculty=faculty,
+    ).first()
     if not group:
         group = Group(
             course=course,
-            faculty="ИНЖЕНЕРНО-ФИЗИЧЕСКИЙ",
+            faculty=faculty,
             speciality=speciality,
         )
         session.add(group)
