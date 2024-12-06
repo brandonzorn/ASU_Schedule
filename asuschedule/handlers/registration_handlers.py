@@ -20,7 +20,11 @@ FACULTY, COURSE, SPECIALITY, SUBGROUP, TEACHER = range(5)
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    faculties = [faculty for (faculty,) in session.query(Group.faculty).distinct().all()]
+    faculties = [
+        faculty[:64] for (faculty,) in session.query(
+            Group.faculty,
+        ).distinct().all()
+    ]
     keyboard = [
         [
             InlineKeyboardButton(
@@ -71,7 +75,7 @@ async def course_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     context.user_data["course"] = query.data
 
     specialities = [
-        speciality for (speciality,) in session.query(
+        speciality[:64] for (speciality,) in session.query(
             Group.speciality,
         ).filter(
             Group.course == context.user_data["course"],
