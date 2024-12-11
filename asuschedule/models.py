@@ -35,7 +35,7 @@ class User(Base):
     group = relationship("Group", back_populates="users")
 
     def is_staff(self) -> bool:
-        return bool(self.is_teacher or self.is_admin)
+        return bool(self.is_admin)
 
     def _get_status_str(self):
         if self.is_teacher:

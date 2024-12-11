@@ -22,6 +22,7 @@ from handlers import (
     users_list_handler,
     message_handler,
     daily_time_selection_handler,
+    handle_file,
 )
 from models import User
 
@@ -226,6 +227,7 @@ def main() -> None:
     # Staff commands
     application.add_handler(message_handler)
     application.add_handler(users_list_handler)
+    application.add_handler(MessageHandler(filters.Document.ALL, handle_file))
 
     application.add_handler(registration_handler)
     application.add_handler(schedules_table_handler)

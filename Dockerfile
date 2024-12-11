@@ -9,4 +9,4 @@ RUN rm -rf requirements
 COPY ./asuschedule /asuschedule/
 WORKDIR /asuschedule
 
-CMD python import_document.py && python main.py
+CMD python main.py
