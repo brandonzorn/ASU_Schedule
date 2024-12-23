@@ -37,6 +37,14 @@ class User(Base):
     def is_staff(self) -> bool:
         return bool(self.is_admin)
 
+    def make_teacher(self, teacher_name: str):
+        self.is_teacher = True
+        self.teacher_name = teacher_name
+
+    def remove_teacher_status(self):
+        self.is_teacher = False
+        self.teacher_name = None
+
     def _get_status_str(self):
         if self.is_teacher:
             return "Преподаватель"

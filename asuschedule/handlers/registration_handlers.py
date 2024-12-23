@@ -144,7 +144,6 @@ async def subgroup_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) 
             name=name,
             subgroup=subgroup,
             group_id=group.id,
-            is_teacher=False,
         )
         session.add(new_user)
         await query.edit_message_text(
@@ -153,7 +152,7 @@ async def subgroup_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) 
     else:
         user.subgroup = subgroup
         user.group_id = group.id
-        user.is_teacher = False
+        user.remove_teacher_status()
         await query.edit_message_text(
             "Ваша группа изменена.",
         )
@@ -211,16 +210,14 @@ async def finalize_registration(
             id=user_id,
             username=username,
             name=name,
-            is_teacher=True,
-            teacher_name=teacher_name,
         )
+        user.make_teacher(teacher_name)
         session.add(new_user)
         await query.edit_message_text(
             f"Регистрация завершена! Преподаватель: {teacher_name}.",
         )
     else:
-        user.teacher_name = teacher_name
-        user.is_teacher = True
+        user.make_teacher(teacher_name)
         await query.edit_message_text(
             f"Ваша информация обновлена. Преподаватель: {teacher_name}.",
         )
