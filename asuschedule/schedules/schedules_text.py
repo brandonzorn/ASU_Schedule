@@ -12,7 +12,7 @@ def get_schedule_text(schedules, date) -> str:
         f"({WEEK_NAMES[int(is_even_week(date))]}):</b>\n\n"
     )
     for schedule in schedules:
-        schedule_text += f"{schedule.to_text()}------------\n"
+        schedule_text += f"{schedule.to_text()}━━━━━━━━━━━━━━━━━━\n"
     return schedule_text
 
 
@@ -22,7 +22,7 @@ def get_schedule_text_by_day(schedules, day: int, even_week) -> str:
         f"({WEEK_NAMES[int(even_week)]}):</b>\n\n"
     )
     for schedule in schedules:
-        schedule_text += f"{schedule.to_text()}------------\n"
+        schedule_text += f"{schedule.to_text()}━━━━━━━━━━━━━━━━━━\n"
     return schedule_text
 
 
