@@ -59,7 +59,7 @@ async def message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 message_handler = CommandHandler("message", message)
 users_list_handler = CommandHandler("users_list", users_list)
-users_stats_handler = CommandHandler("user_stats", users_stats)
+users_stats_handler = CommandHandler("users_stats", users_stats)
 
 __all__ = [
     message_handler,
