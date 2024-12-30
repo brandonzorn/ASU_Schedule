@@ -7,8 +7,8 @@ from telegram.ext import ContextTypes
 
 from consts import WEEK_NAMES
 from database import session
-from models import Group, Schedule, User
-from utils import require_registration
+from models import Group, Schedule
+from utils import require_staff
 
 days_of_week = {
     "пн": 0,
@@ -25,12 +25,8 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
-@require_registration
+@require_staff
 async def handle_file(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user = session.query(User).filter_by(id=update.effective_user.id).first()
-    if not user.is_staff():
-        await update.message.reply_text("У вас нет доступа к этой команде.")
-        return
     document = update.message.document
 
     if document.file_name.endswith(".xlsx"):
