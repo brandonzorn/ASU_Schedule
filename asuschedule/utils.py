@@ -34,6 +34,26 @@ def require_registration(func):
     return wrapper
 
 
+def require_staff(func):
+    @wraps(func)
+    async def wrapper(
+            update: Update, context: ContextTypes.DEFAULT_TYPE, *args, **kwargs,
+    ):
+        user = session.query(User).filter_by(id=update.effective_user.id).first()
+        if user is None:
+            await update.message.reply_text(
+                "Вы не зарегистрированы. Пожалуйста, начните с команды /start.",
+            )
+            return None
+        if not user.is_staff():
+            await update.message.reply_text(
+                "У вас нет доступа к этой команде.",
+            )
+            return None
+        return await func(update, context, *args, **kwargs)
+    return wrapper
+
+
 def is_even_week(date) -> bool:
     week_number = date.isocalendar()[1]
     return week_number % 2 == 0

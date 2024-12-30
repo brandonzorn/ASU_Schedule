@@ -4,10 +4,10 @@ from telegram.ext import ContextTypes, CommandHandler
 
 from database import session
 from models import User
-from utils import require_registration
+from utils import require_staff
 
 
-@require_registration
+@require_staff
 async def users_list(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = session.query(User).filter_by(id=update.effective_user.id).first()
     if not user.is_staff():
@@ -25,7 +25,7 @@ async def users_list(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
 
-@require_registration
+@require_staff
 async def users_stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = session.query(User).filter_by(id=update.effective_user.id).first()
     if not user.is_staff():
@@ -41,7 +41,7 @@ async def users_stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 
-@require_registration
+@require_staff
 async def message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = session.query(User).filter_by(id=update.effective_user.id).first()
     if not user.is_staff():
