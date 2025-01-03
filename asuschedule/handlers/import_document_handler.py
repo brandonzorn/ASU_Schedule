@@ -38,8 +38,11 @@ async def handle_file(update: Update, context: ContextTypes.DEFAULT_TYPE):
         try:
             dataframe1 = pd.read_excel(file_io, sheet_name=None)
             combined_df = pd.concat(
-                dataframe1.values(), ignore_index=True,
+                dataframe1.values(),
+                ignore_index=True,
             ).replace({float("nan"): None})
+
+            session.query(Schedule).delete()
 
             for val in combined_df.values:
                 course = val[0]
