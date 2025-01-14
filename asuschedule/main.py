@@ -25,6 +25,7 @@ from handlers import (
     handle_file,
     users_stats_handler,
     turn_off_daily_notify_handler,
+    delete_all_schedules_handler,
 )
 from models import User
 
@@ -231,6 +232,7 @@ def main() -> None:
     application.add_handler(users_list_handler)
     application.add_handler(users_stats_handler)
     application.add_handler(turn_off_daily_notify_handler)
+    application.add_handler(delete_all_schedules_handler)
     application.add_handler(MessageHandler(filters.Document.ALL, handle_file))
 
     application.add_handler(registration_handler)

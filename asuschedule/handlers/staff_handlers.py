@@ -3,7 +3,7 @@ from telegram.constants import ParseMode
 from telegram.ext import ContextTypes, CommandHandler
 
 from database import session
-from models import User
+from models import User, Schedule
 from utils import require_staff
 
 
@@ -54,12 +54,23 @@ async def turn_off_daily_notify(update: Update, context: ContextTypes.DEFAULT_TY
     )
 
 
+@require_staff
+async def delete_all_schedules(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    session.query(Schedule).delete()
+    session.commit()
+    await update.message.reply_text("Все расписания успешно удалены.")
+
+
 message_handler = CommandHandler("message", message)
 users_list_handler = CommandHandler("users_list", users_list)
 users_stats_handler = CommandHandler("users_stats", users_stats)
 turn_off_daily_notify_handler = CommandHandler(
     "turn_off_daily_notify",
     turn_off_daily_notify,
+)
+delete_all_schedules_handler = CommandHandler(
+    "delete_all_schedules",
+    delete_all_schedules,
 )
 
 __all__ = [
