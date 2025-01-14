@@ -5,6 +5,7 @@ from .staff_handlers import (
     message_handler,
     users_list_handler,
     users_stats_handler,
+    turn_off_daily_notify_handler,
 )
 from .import_document_handler import handle_file
 
@@ -15,5 +16,6 @@ __all__ = [
     message_handler,
     users_list_handler,
     users_stats_handler,
+    turn_off_daily_notify_handler,
     handle_file,
 ]

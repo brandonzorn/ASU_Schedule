@@ -9,10 +9,6 @@ from utils import require_staff
 
 @require_staff
 async def users_list(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user = session.query(User).filter_by(id=update.effective_user.id).first()
-    if not user.is_staff():
-        await update.message.reply_text("У вас нет доступа к этой команде.")
-        return
     users = session.query(User).all()
     chunk_size = 15
     user_chunks = [users[i:i + chunk_size] for i in range(0, len(users), chunk_size)]
@@ -27,10 +23,6 @@ async def users_list(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 @require_staff
 async def users_stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user = session.query(User).filter_by(id=update.effective_user.id).first()
-    if not user.is_staff():
-        await update.message.reply_text("У вас нет доступа к этой команде.")
-        return
     users = session.query(User).all()
     await update.message.reply_text(
         f"<b>Статистика пользователей:</b>\n\n"
@@ -43,10 +35,6 @@ async def users_stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 @require_staff
 async def message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user = session.query(User).filter_by(id=update.effective_user.id).first()
-    if not user.is_staff():
-        await update.message.reply_text("У вас нет доступа к этой команде.")
-        return
     if context.args:
         msg = " ".join(context.args)
         users = session.query(User).all()
@@ -57,12 +45,26 @@ async def message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Пожалуйста, укажите сообщение после команды.")
 
 
+@require_staff
+async def turn_off_daily_notify(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    session.query(User).update({User.daily_notify: False})
+    session.commit()
+    await update.message.reply_text(
+        "Ежедневные уведомления отключены для всех пользователей.",
+    )
+
+
 message_handler = CommandHandler("message", message)
 users_list_handler = CommandHandler("users_list", users_list)
 users_stats_handler = CommandHandler("users_stats", users_stats)
+turn_off_daily_notify_handler = CommandHandler(
+    "turn_off_daily_notify",
+    turn_off_daily_notify,
+)
 
 __all__ = [
     message_handler,
     users_list_handler,
     users_stats_handler,
+    turn_off_daily_notify_handler,
 ]
