@@ -3,6 +3,7 @@ from functools import wraps
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import ContextTypes
 
+from config import INVERT_WEEK_PARITY
 from database import session
 from models import User
 
@@ -51,6 +52,8 @@ def require_staff(func):
 
 def is_even_week(date) -> bool:
     week_number = date.isocalendar()[1]
+    if INVERT_WEEK_PARITY:
+        return not week_number % 2 == 0
     return week_number % 2 == 0
 
 

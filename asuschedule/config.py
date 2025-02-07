@@ -8,6 +8,10 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 USE_ALTERNATE_LESSON_TIMES = True if os.getenv(
     "USE_ALTERNATE_LESSON_TIMES",
 ) == "True" else False
+INVERT_WEEK_PARITY = True if os.getenv(
+    "INVERT_WEEK_PARITY",
+) == "True" else False
+
 USE_SQLITE_DATABASE = True if os.getenv(
     "USE_SQLITE_DATABASE",
 ) == "True" else False
