@@ -56,7 +56,7 @@ async def info_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 async def schedule_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user = session.query(User).filter_by(id=update.effective_user.id).first()
 
-    date = datetime.date.today()
+    date = datetime.datetime.now(tz=TIMEZONE)
     schedules = get_schedules(user, date.weekday(), is_even_week(date))
 
     if not schedules:
@@ -80,7 +80,7 @@ async def next_day_schedule_handler(
 ) -> None:
     user = session.query(User).filter_by(id=update.effective_user.id).first()
 
-    date = datetime.date.today() + datetime.timedelta(days=1)
+    date = datetime.datetime.now(tz=TIMEZONE) + datetime.timedelta(days=1)
     schedules = get_schedules(user, date.weekday(), is_even_week(date))
 
     if not schedules:
@@ -117,7 +117,7 @@ async def set_daily_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) 
 
 async def next_lesson_handler(context: ContextTypes.DEFAULT_TYPE):
     lesson_num = context.job.data["lesson_num"]
-    date = datetime.date.today()
+    date = datetime.datetime.now(tz=TIMEZONE)
 
     users = session.query(User).filter_by(daily_notify=True).all()
     for user in users:
@@ -143,8 +143,8 @@ async def daily_schedule_handler(context: ContextTypes.DEFAULT_TYPE) -> None:
         daily_notify=True, notify_time=notify_time,
     ).all()
     date = (
-        datetime.date.today() + datetime.timedelta(days=1)
-        if notify_time == 20 else datetime.date.today()
+        datetime.datetime.now(tz=TIMEZONE) + datetime.timedelta(days=1)
+        if notify_time == 20 else datetime.datetime.now(tz=TIMEZONE)
     )
     for user in users:
         schedules = get_schedules(user, date.weekday(), is_even_week(date))
