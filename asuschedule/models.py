@@ -17,6 +17,9 @@ class Group(Base):
     def get_name(self):
         return f"{self.course}_{self.faculty}_{self.speciality}"
 
+    def get_short_name(self):
+        return f"{self.course}_{self.speciality}"
+
 
 class User(Base):
     __tablename__ = "users"
@@ -93,15 +96,20 @@ class Schedule(Base):
 
     group = relationship("Group", back_populates="schedules")
 
-    def to_text(self) -> str:
+    def to_text(self, is_teacher=False) -> str:
         start_time, end_time = LESSON_TIMES.get(self.lesson_number, ("-", "-"))
-        return (
+        text = (
             f"{self.lesson_number} пара ({start_time} - {end_time})\n"
             f"├Предмет: {self.subject or 'не указано'}\n"
             f"├Формат: {self.lesson_type or 'не указано'}\n"
             f"├Кабинет: {self.room or 'не указано'}\n"
             f"├Преподаватель: {self.teacher or 'не указано'}\n"
         )
+
+        if is_teacher:
+            text += f"├Группа: {self.group.get_short_name()}\n"
+
+        return text
 
 
 Group.schedules = relationship("Schedule", order_by=Schedule.id, back_populates="group")

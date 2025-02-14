@@ -1,10 +1,15 @@
 from sqlalchemy import or_
 
 from database import session
-from models import Schedule
+from models import Schedule, User
 
 
-def get_schedules(user, weekday: int, even_week: bool, lesson_number: int = None):
+def get_schedules(
+        user: User,
+        weekday: int,
+        even_week: bool,
+        lesson_number: int = None,
+) -> list[Schedule]:
     query = session.query(Schedule).filter_by(
         is_even_week=even_week,
         day_of_week=weekday,

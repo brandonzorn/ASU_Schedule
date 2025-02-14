@@ -65,7 +65,7 @@ async def schedule_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -
             reply_markup=get_main_keyboard(),
         )
         return
-    schedule_text = get_schedule_text(schedules, date)
+    schedule_text = get_schedule_text(user, schedules, date)
     await update.message.reply_text(
         schedule_text,
         parse_mode=ParseMode.HTML,
@@ -89,7 +89,7 @@ async def next_day_schedule_handler(
             reply_markup=get_main_keyboard(),
         )
         return
-    schedule_text = get_schedule_text(schedules, date)
+    schedule_text = get_schedule_text(user, schedules, date)
     await update.message.reply_text(
         schedule_text,
         parse_mode=ParseMode.HTML,
@@ -128,7 +128,7 @@ async def next_lesson_handler(context: ContextTypes.DEFAULT_TYPE):
         )
         if not schedules:
             continue
-        schedule_text = get_next_lesson_text(schedules[0])
+        schedule_text = get_next_lesson_text(user, schedules[0])
         await context.bot.send_message(
             chat_id=user.id,
             text=schedule_text,
@@ -154,7 +154,7 @@ async def daily_schedule_handler(context: ContextTypes.DEFAULT_TYPE) -> None:
                 text="Расписание не найдено.",
             )
             continue
-        schedule_text = get_schedule_text(schedules, date)
+        schedule_text = get_schedule_text(user, schedules, date)
         await context.bot.send_message(
             chat_id=user.id,
             text=schedule_text,
