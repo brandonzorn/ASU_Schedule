@@ -1,5 +1,5 @@
-from consts import WEEK_NAMES, DAY_NAMES
-from models import User, Schedule
+from consts import DAY_NAMES, WEEK_NAMES
+from models import Schedule, User
 from utils import is_even_week
 
 

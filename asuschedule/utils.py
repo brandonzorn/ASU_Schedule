@@ -1,6 +1,6 @@
 from functools import wraps
 
-from telegram import Update, ReplyKeyboardMarkup
+from telegram import ReplyKeyboardMarkup, Update
 from telegram.ext import ContextTypes
 
 from config import INVERT_WEEK_PARITY

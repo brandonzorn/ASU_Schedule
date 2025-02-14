@@ -4,16 +4,16 @@ from telegram import (
     Update,
 )
 from telegram.ext import (
+    CallbackQueryHandler,
+    CommandHandler,
     ContextTypes,
     ConversationHandler,
-    CommandHandler,
-    CallbackQueryHandler,
-    MessageHandler,
     filters,
+    MessageHandler,
 )
 
 from database import session
-from models import Group, User, Schedule
+from models import Group, Schedule, User
 from utils import get_main_keyboard
 
 FACULTY, COURSE, SPECIALITY, SUBGROUP, TEACHER = range(5)

@@ -1,9 +1,9 @@
 from telegram import Update
 from telegram.constants import ParseMode
-from telegram.ext import ContextTypes, CommandHandler
+from telegram.ext import CommandHandler, ContextTypes
 
 from database import session
-from models import User, Schedule
+from models import Schedule, User
 from utils import require_staff
 
 

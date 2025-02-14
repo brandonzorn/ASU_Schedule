@@ -5,13 +5,13 @@ from telegram import (
 )
 from telegram.constants import ParseMode
 from telegram.ext import (
+    CallbackQueryHandler,
+    CommandHandler,
     ContextTypes,
     ConversationHandler,
-    CommandHandler,
-    CallbackQueryHandler,
 )
 
-from consts import WEEK_NAMES, DAY_NAMES
+from consts import DAY_NAMES, WEEK_NAMES
 from database import session
 from models import Schedule
 from schedules.schedules import get_schedules
