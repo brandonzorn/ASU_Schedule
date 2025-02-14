@@ -120,6 +120,7 @@ async def handle_file(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "Данные успешно загружены и сохранены в базу данных.",
             )
         except Exception as e:
+            session.rollback()
             await update.message.reply_text(f"Произошла ошибка при обработке файла. {e}")
     else:
         await update.message.reply_text(
