@@ -1,4 +1,4 @@
-FROM python:3.13.2-slim
+FROM python:3.13-alpine
 
 COPY ./requirements /requirements
 RUN pip install --no-cache-dir -r requirements/prod.txt
