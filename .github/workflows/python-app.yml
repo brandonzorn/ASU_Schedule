@@ -12,7 +12,7 @@ permissions:
 jobs:
   flake8-test:
     runs-on: ubuntu-latest
-    container: python:3.12
+    container: python:3.13-alpine
     steps:
     - uses: actions/checkout@v3
     - name: Install dependencies
