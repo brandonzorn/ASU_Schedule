@@ -13,11 +13,4 @@ INVERT_WEEK_PARITY = True if os.getenv(
     "INVERT_WEEK_PARITY",
 ) == "True" else False
 
-USE_SQLITE_DATABASE = True if os.getenv(
-    "USE_SQLITE_DATABASE",
-) == "True" else False
 DATABASE_NAME = os.getenv("DATABASE_NAME")
-DATABASE_USER = os.getenv("DATABASE_USER")
-DATABASE_PASSWORD = os.getenv("DATABASE_PASSWORD")
-DATABASE_HOST = os.getenv("DATABASE_HOST")
-DATABASE_PORT = os.getenv("DATABASE_PORT")
