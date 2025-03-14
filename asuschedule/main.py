@@ -97,24 +97,6 @@ async def next_day_schedule_handler(
     )
 
 
-@require_registration
-async def set_daily_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    user = session.query(User).filter_by(id=update.effective_user.id).first()
-
-    if user.daily_notify:
-        await update.message.reply_text(
-            "Ежедневная рассылка выключена",
-            reply_markup=get_main_keyboard(),
-        )
-    else:
-        await update.message.reply_text(
-            "Ежедневная рассылка включена",
-            reply_markup=get_main_keyboard(),
-        )
-    user.daily_notify = not user.daily_notify
-    session.commit()
-
-
 async def next_lesson_handler(context: ContextTypes.DEFAULT_TYPE):
     lesson_num = context.job.data["lesson_num"]
     date = datetime.datetime.now(tz=TIMEZONE)
@@ -200,7 +182,6 @@ def main() -> None:
     application.add_handler(CommandHandler("info", info_handler))
     application.add_handler(CommandHandler("schedule", schedule_handler))
     application.add_handler(CommandHandler("schedule_next", next_day_schedule_handler))
-    application.add_handler(CommandHandler("daily", set_daily_handler))
 
     application.add_handler(
         MessageHandler(
@@ -218,12 +199,6 @@ def main() -> None:
         MessageHandler(
             filters.TEXT & filters.Regex(r"(?i)^Расписание на завтра$"),
             next_day_schedule_handler,
-        ),
-    )
-    application.add_handler(
-        MessageHandler(
-            filters.TEXT & filters.Regex(r"(?i)^Ежедневная рассылка$"),
-            set_daily_handler,
         ),
     )
 

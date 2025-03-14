@@ -9,6 +9,8 @@ from telegram.ext import (
     CommandHandler,
     ContextTypes,
     ConversationHandler,
+    MessageHandler,
+    filters,
 )
 
 from consts import DAY_NAMES, WEEK_NAMES
@@ -77,7 +79,13 @@ async def select_day(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int 
 
 
 schedules_table_handler = ConversationHandler(
-    entry_points=[CommandHandler("schedule_days", schedules_table)],
+    entry_points=[
+        CommandHandler("schedule_days", schedules_table),
+        MessageHandler(
+            filters.TEXT & filters.Regex(r"(?i)^Выбрать день$"),
+            schedules_table,
+        ),
+    ],
     states={
         SELECT_DAY: [CallbackQueryHandler(select_day)],
     },
