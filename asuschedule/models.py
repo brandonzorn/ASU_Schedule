@@ -65,7 +65,8 @@ class User(Base):
         else:
             base_str = (
                 f"Имя пользователя: {self.name}\n"
-                f"Группа: {self.group.get_name()}\n"
+                f"Факультет: {self.group.faculty}\n"
+                f"Группа: {self.group.get_short_name()}\n"
                 f"Подгруппа: {self.subgroup}\n"
             )
 
