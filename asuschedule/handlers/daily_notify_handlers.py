@@ -22,7 +22,7 @@ async def keyboard_time(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
     keyboard = [
         [InlineKeyboardButton("8:00", callback_data="8")],
         [InlineKeyboardButton("20:00", callback_data="20")],
-        [InlineKeyboardButton("Включить/Выключить", callback_data="toggle")],
+        [InlineKeyboardButton("Выключить", callback_data="disable")],
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     await update.message.reply_text(
@@ -37,21 +37,16 @@ async def time_selection(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await query.answer()
 
     selected_time = query.data
-    user_id = query.from_user.id
-    user = session.query(User).filter_by(id=user_id).first()
+    user = session.query(User).filter_by(id=query.from_user.id).first()
     if user:
-        if selected_time == "toggle":
-            if user.daily_notify:
-                await query.edit_message_text(
-                    "Ежедневная рассылка выключена",
-                )
-            else:
-                await query.edit_message_text(
-                    "Ежедневная рассылка включена",
-                )
-            user.daily_notify = not user.daily_notify
+        if selected_time == "disable":
+            await query.edit_message_text(
+                "Ежедневная рассылка выключена",
+            )
+            user.daily_notify = False
         else:
             user.notify_time = int(selected_time)
+            user.daily_notify = True
             await query.edit_message_text(
                 f"Вы выбрали время рассылки: {selected_time} часов",
             )
