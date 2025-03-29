@@ -26,10 +26,7 @@ SELECT_DAY, SHOW_SCHEDULE = range(2)
 
 
 @require_registration
-async def schedules_table(
-        update: Update,
-        context: ContextTypes.DEFAULT_TYPE,
-) -> int | None:
+async def schedules_table(update: Update, _) -> int | None:
     days = [
         day for (day,) in session.query(
             Schedule.day_of_week,

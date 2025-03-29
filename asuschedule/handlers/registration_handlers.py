@@ -2,6 +2,7 @@ from telegram import (
     InlineKeyboardButton,
     InlineKeyboardMarkup,
     Update,
+    Message,
 )
 from telegram.ext import (
     CallbackQueryHandler,
@@ -19,7 +20,7 @@ from utils import get_main_keyboard
 FACULTY, COURSE, SPECIALITY, SUBGROUP, TEACHER = range(5)
 
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+async def start(update: Update, _) -> int:
     faculties = [
         faculty[:32] for (faculty,) in session.query(
             Group.faculty,
@@ -112,7 +113,10 @@ async def speciality_callback(update: Update, context: ContextTypes.DEFAULT_TYPE
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
-    await query.edit_message_text("Выберите подгруппу:", reply_markup=reply_markup)
+    await query.edit_message_text(
+        "Выберите подгруппу:",
+        reply_markup=reply_markup,
+    )
     return SUBGROUP
 
 
@@ -156,10 +160,11 @@ async def subgroup_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) 
         await query.edit_message_text(
             "Ваша группа изменена.",
         )
-    await query.message.reply_text(
-        "Теперь вам доступны команды бота!",
-        reply_markup=get_main_keyboard(),
-    )
+    if isinstance(query.message, Message):
+        await query.message.reply_text(
+            "Теперь вам доступны команды бота!",
+            reply_markup=get_main_keyboard(),
+        )
     session.commit()
     return ConversationHandler.END
 
@@ -184,7 +189,11 @@ async def teacher_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -
             InlineKeyboardButton(f"{teacher}", callback_data=f"{teacher}"),
         ] for teacher in teachers
     ]
-    keyboard.append([InlineKeyboardButton("Отмена", callback_data="cancel")])
+    keyboard.append(
+        [
+            InlineKeyboardButton("Отмена", callback_data="cancel"),
+        ],
+    )
     reply_markup = InlineKeyboardMarkup(keyboard)
 
     await query.edit_message_text("Выберите преподавателя:", reply_markup=reply_markup)
@@ -192,7 +201,8 @@ async def teacher_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -
 
 
 async def finalize_registration(
-        update: Update, context: ContextTypes.DEFAULT_TYPE,
+        update: Update,
+        context: ContextTypes.DEFAULT_TYPE,
 ) -> int:
     query = update.callback_query
     if query.data == "cancel":
@@ -221,15 +231,16 @@ async def finalize_registration(
         await query.edit_message_text(
             f"Ваша информация обновлена. Преподаватель: {teacher_name}.",
         )
-    await query.message.reply_text(
-        "Теперь вам доступны команды бота!",
-        reply_markup=get_main_keyboard(),
-    )
+    if isinstance(query.message, Message):
+        await query.message.reply_text(
+            "Теперь вам доступны команды бота!",
+            reply_markup=get_main_keyboard(),
+        )
     session.commit()
     return ConversationHandler.END
 
 
-async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+async def cancel(update: Update, _) -> int:
     if update.message:
         await update.message.reply_text("Регистрация отменена.")
     elif update.callback_query:

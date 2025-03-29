@@ -3,7 +3,6 @@ from io import BytesIO
 
 import pandas as pd
 from telegram import Update
-from telegram.ext import ContextTypes
 
 from consts import WEEK_NAMES
 from database import session
@@ -26,7 +25,7 @@ logging.basicConfig(level=logging.INFO)
 
 
 @require_staff
-async def handle_file(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def handle_file(update: Update, _):
     document = update.message.document
 
     if document.file_name.endswith(".xlsx"):
@@ -121,7 +120,9 @@ async def handle_file(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
         except Exception as e:
             session.rollback()
-            await update.message.reply_text(f"Произошла ошибка при обработке файла. {e}")
+            await update.message.reply_text(
+                f"Произошла ошибка при обработке файла. {e}",
+            )
     else:
         await update.message.reply_text(
             "Пожалуйста, отправьте файл в формате Excel (.xlsx).",

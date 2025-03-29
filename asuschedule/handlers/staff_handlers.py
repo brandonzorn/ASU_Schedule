@@ -8,7 +8,7 @@ from utils import require_staff
 
 
 @require_staff
-async def users_list(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def users_list(update: Update, _):
     users = session.query(User).all()
     chunk_size = 15
     user_chunks = [users[i:i + chunk_size] for i in range(0, len(users), chunk_size)]
@@ -22,7 +22,7 @@ async def users_list(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 @require_staff
-async def users_stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def users_stats(update: Update, _):
     users = session.query(User).all()
     await update.message.reply_text(
         f"<b>Статистика пользователей:</b>\n\n"
@@ -46,7 +46,7 @@ async def message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 @require_staff
-async def turn_off_daily_notify(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def turn_off_daily_notify(update: Update, _):
     session.query(User).update({User.daily_notify: False})
     session.commit()
     await update.message.reply_text(
@@ -55,7 +55,7 @@ async def turn_off_daily_notify(update: Update, context: ContextTypes.DEFAULT_TY
 
 
 @require_staff
-async def delete_all_schedules(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def delete_all_schedules(update: Update, _):
     session.query(Schedule).delete()
     session.commit()
     await update.message.reply_text("Все расписания успешно удалены.")

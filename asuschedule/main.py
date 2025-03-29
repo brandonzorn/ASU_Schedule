@@ -45,7 +45,7 @@ logger = logging.getLogger(__name__)
 
 
 @require_registration
-async def info_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def info_handler(update: Update, _) -> None:
     user = session.query(User).filter_by(id=update.effective_user.id).first()
     await update.message.reply_text(
         user.to_text(),
@@ -53,7 +53,7 @@ async def info_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 
 
 @require_registration
-async def schedule_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def schedule_handler(update: Update, _) -> None:
     user = session.query(User).filter_by(id=update.effective_user.id).first()
 
     date = datetime.datetime.now(tz=TIMEZONE)
@@ -74,10 +74,7 @@ async def schedule_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -
 
 
 @require_registration
-async def next_day_schedule_handler(
-        update: Update,
-        context: ContextTypes.DEFAULT_TYPE,
-) -> None:
+async def next_day_schedule_handler(update: Update, _) -> None:
     user = session.query(User).filter_by(id=update.effective_user.id).first()
 
     date = datetime.datetime.now(tz=TIMEZONE) + datetime.timedelta(days=1)

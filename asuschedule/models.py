@@ -77,7 +77,11 @@ class User(Base):
         )
 
 
-Group.users = relationship("User", order_by=User.id, back_populates="group")
+Group.users = relationship(
+    "User",
+    order_by=User.id,
+    back_populates="group",
+)
 
 
 class Schedule(Base):
@@ -113,7 +117,11 @@ class Schedule(Base):
         return text
 
 
-Group.schedules = relationship("Schedule", order_by=Schedule.id, back_populates="group")
+Group.schedules = relationship(
+    "Schedule",
+    order_by=Schedule.id,
+    back_populates="group",
+)
 
 
 __all__ = [

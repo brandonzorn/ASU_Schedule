@@ -6,7 +6,6 @@ from telegram import (
 from telegram.ext import (
     CallbackQueryHandler,
     CommandHandler,
-    ContextTypes,
     ConversationHandler,
     filters,
     MessageHandler,
@@ -18,7 +17,7 @@ from models import User
 TIME_SELECTION = 1
 
 
-async def keyboard_time(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+async def keyboard_time(update: Update, _) -> int:
     keyboard = [
         [InlineKeyboardButton("8:00", callback_data="8")],
         [InlineKeyboardButton("20:00", callback_data="20")],
@@ -32,7 +31,7 @@ async def keyboard_time(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
     return TIME_SELECTION
 
 
-async def time_selection(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def time_selection(update: Update, _):
     query = update.callback_query
     await query.answer()
 
@@ -55,7 +54,7 @@ async def time_selection(update: Update, context: ContextTypes.DEFAULT_TYPE):
     return ConversationHandler.END
 
 
-async def cancel(update, context):
+async def cancel(update: Update, _):
     await update.message.reply_text("Настройка рассылки отменена.")
     return ConversationHandler.END
 
