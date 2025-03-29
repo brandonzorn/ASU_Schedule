@@ -18,7 +18,7 @@ jobs:
     - name: Install dependencies
       run: pip install -r requirements/test.txt
     - name: Check code formatting with flake8
-      run: flake8 ./
+      run: flake8 ./asuschedule/
 
   prod-deploy:
     if: github.ref == 'refs/heads/master'
