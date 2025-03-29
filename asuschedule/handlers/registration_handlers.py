@@ -211,7 +211,7 @@ async def finalize_registration(
             username=username,
             name=name,
         )
-        user.make_teacher(teacher_name)
+        new_user.make_teacher(teacher_name)
         session.add(new_user)
         await query.edit_message_text(
             f"Регистрация завершена! Преподаватель: {teacher_name}.",
