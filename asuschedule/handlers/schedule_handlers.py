@@ -15,11 +15,9 @@ from telegram.ext import (
 
 from consts import DAY_NAMES, WEEK_NAMES
 from database import session
-from models import Schedule
+from models import Schedule, User
 from schedules.schedules import get_schedules
 from schedules.schedules_text import get_schedule_text_by_day
-
-from models import User
 from utils import require_registration
 
 SELECT_DAY, SHOW_SCHEDULE = range(2)

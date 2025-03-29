@@ -3,9 +3,7 @@ from pathlib import Path
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from config import (
-    DATABASE_NAME,
-)
+from config import DATABASE_NAME
 from models import Base
 
 
