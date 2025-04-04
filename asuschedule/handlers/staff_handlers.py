@@ -1,3 +1,8 @@
+import html
+import json
+import logging
+import traceback
+
 from telegram import Update
 from telegram.constants import ParseMode
 from telegram.ext import CommandHandler, ContextTypes
@@ -5,6 +10,9 @@ from telegram.ext import CommandHandler, ContextTypes
 from database import session
 from models import Schedule, User
 from utils import require_staff
+
+
+logger = logging.getLogger(__name__)
 
 
 @require_staff
@@ -61,6 +69,38 @@ async def delete_all_schedules(update: Update, _):
     await update.message.reply_text("Все расписания успешно удалены.")
 
 
+async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
+    logger.error(
+        "Exception while handling an update:",
+        exc_info=context.error,
+    )
+    tb_list = traceback.format_exception(
+        None,
+        context.error,
+        context.error.__traceback__,
+    )
+    tb_string = "".join(tb_list)
+    update_str = update.to_dict() if isinstance(update, Update) else str(update)
+    err_message = (
+        "An exception was raised while handling an update\n"
+        f"<pre>update = {html.escape(
+            json.dumps(update_str, indent=2, ensure_ascii=False),
+        )}"
+        "</pre>\n\n"
+        f"<pre>context.chat_data = {html.escape(str(context.chat_data))}</pre>\n\n"
+        f"<pre>context.user_data = {html.escape(str(context.user_data))}</pre>\n\n"
+        f"<pre>{html.escape(tb_string)}</pre>"
+    )
+
+    admin_user = session.query(User).filter_by(is_admin=True).first()
+
+    await context.bot.send_message(
+        chat_id=admin_user.id,
+        text=err_message,
+        parse_mode=ParseMode.HTML,
+    )
+
+
 message_handler = CommandHandler("message", message)
 users_list_handler = CommandHandler("users_list", users_list)
 users_stats_handler = CommandHandler("users_stats", users_stats)
@@ -78,4 +118,5 @@ __all__ = [
     users_list_handler,
     users_stats_handler,
     turn_off_daily_notify_handler,
+    error_handler,
 ]

@@ -8,6 +8,7 @@ from .staff_handlers import (
     turn_off_daily_notify_handler,
     users_list_handler,
     users_stats_handler,
+    error_handler,
 )
 
 __all__ = [
@@ -20,4 +21,5 @@ __all__ = [
     turn_off_daily_notify_handler,
     delete_all_schedules_handler,
     handle_file,
+    error_handler,
 ]
