@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 @require_staff
 async def users_list(update: Update, _):
-    users = session.query(User).all()
+    users = session.query(User).order_by(User.is_teacher).all()
     chunk_size = 15
     user_chunks = [users[i:i + chunk_size] for i in range(0, len(users), chunk_size)]
 
