@@ -7,4 +7,4 @@ RUN rm -rf requirements
 COPY ./asuschedule /asuschedule/
 WORKDIR /asuschedule
 
-CMD ["python", "main.py"]
+ENTRYPOINT ["python", "main.py"]
