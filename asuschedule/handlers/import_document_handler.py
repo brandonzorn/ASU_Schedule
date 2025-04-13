@@ -74,45 +74,24 @@ async def handle_file(update: Update, _):
                         f"Добавлена новая группа {group.get_name()}",
                     )
 
-                existing_schedule = session.query(Schedule).filter_by(
-                    group_id=group.id,
-                    lesson_number=lesson_number,
-                    day_of_week=num_day_of_week,
-                    subgroup=subgroup,
-                    is_even_week=is_even_week,
-                ).first()
-
-                if existing_schedule:
-                    existing_schedule.day_of_week = num_day_of_week
-                    existing_schedule.subject = subject
-                    existing_schedule.teacher = teacher
-                    existing_schedule.room = room
-                    existing_schedule.subgroup = subgroup
-                    existing_schedule.lesson_type = lesson_type
-                    logger.info(
-                        f"Обновлено расписание для группы "
-                        f"ID {group.get_name()} и пары номер {lesson_number} "
-                        f"в {day_of_week}. ({WEEK_NAMES[int(is_even_week)]}).",
-                    )
-                else:
-                    session.add(
-                        Schedule(
-                            day_of_week=num_day_of_week,
-                            lesson_number=lesson_number,
-                            subject=subject,
-                            teacher=teacher,
-                            room=room,
-                            subgroup=subgroup,
-                            group_id=group.id,
-                            lesson_type=lesson_type,
-                            is_even_week=is_even_week,
-                        ),
-                    )
-                    logger.info(
-                        f"Добавлено новое расписание для группы"
-                        f"ID {group.get_name()} и пары номер {lesson_number} "
-                        f"в {day_of_week} ({WEEK_NAMES[int(is_even_week)]}).",
-                    )
+                session.add(
+                    Schedule(
+                        day_of_week=num_day_of_week,
+                        lesson_number=lesson_number,
+                        subject=subject,
+                        teacher=teacher,
+                        room=room,
+                        subgroup=subgroup,
+                        group_id=group.id,
+                        lesson_type=lesson_type,
+                        is_even_week=is_even_week,
+                    ),
+                )
+                logger.info(
+                    f"Добавлено расписание для группы"
+                    f"ID {group.get_name()} и пары номер {lesson_number} "
+                    f"в {day_of_week} ({WEEK_NAMES[int(is_even_week)]}).",
+                )
 
             session.commit()
             await update.message.reply_text(
