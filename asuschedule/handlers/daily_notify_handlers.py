@@ -13,10 +13,12 @@ from telegram.ext import (
 
 from database import session
 from models import User
+from utils import require_registration
 
 TIME_SELECTION = 1
 
 
+@require_registration
 async def keyboard_time(update: Update, _) -> int:
     keyboard = [
         [InlineKeyboardButton("8:00", callback_data="8")],
