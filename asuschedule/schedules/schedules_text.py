@@ -14,9 +14,8 @@ def get_schedule_text(user: User, schedules: list[Schedule], date) -> str:
     schedule_text = f"<b>🗓️ Расписание на {day_name} ({week_name}):</b>\n\n"
     if not schedules:
         schedule_text += "🎉 Занятий нет."
-    else:
-        for schedule in schedules:
-            schedule_text += f"{schedule.to_text(user.is_teacher)}━━━━━━━━━━━━━━━━━━\n"
+    for schedule in schedules:
+        schedule_text += f"{schedule.to_text(user.is_teacher)}━━━━━━━━━━━━━━━━━━\n"
     return schedule_text
 
 
@@ -30,6 +29,8 @@ def get_schedule_text_by_day(
     week_name = WEEK_NAMES[int(even_week)]
 
     schedule_text = f"<b>🗓️ Расписание на {day_name} ({week_name}):</b>\n\n"
+    if not schedules:
+        schedule_text += "🎉 Занятий нет."
     for schedule in schedules:
         schedule_text += f"{schedule.to_text(user.is_teacher)}━━━━━━━━━━━━━━━━━━\n"
     return schedule_text

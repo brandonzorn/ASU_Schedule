@@ -63,10 +63,6 @@ async def select_day(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int 
     day, is_even_week = (int(day_data[0]), bool(int(day_data[1])))
 
     schedules = get_schedules(user, day, is_even_week)
-    if not schedules:
-        await query.edit_message_text("Расписание не найдено.")
-        return ConversationHandler.END
-
     schedules_text = get_schedule_text_by_day(user, schedules, day, is_even_week)
 
     await query.edit_message_text(text=schedules_text, parse_mode=ParseMode.HTML)
