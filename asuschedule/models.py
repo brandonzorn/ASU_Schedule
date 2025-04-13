@@ -14,10 +14,10 @@ class Group(Base):
     faculty = Column(String, nullable=False)
     speciality = Column(String, nullable=False)
 
-    def get_name(self):
+    def get_name(self) -> str:
         return f"{self.course}_{self.faculty}_{self.speciality}"
 
-    def get_short_name(self):
+    def get_short_name(self) -> str:
         return f"{self.course}_{self.speciality}"
 
 
@@ -40,48 +40,48 @@ class User(Base):
     def is_staff(self) -> bool:
         return bool(self.is_admin)
 
-    def make_teacher(self, teacher_name: str):
+    def make_teacher(self, teacher_name: str) -> None:
         self.is_teacher = True
         self.teacher_name = teacher_name
 
-    def remove_teacher_status(self):
+    def remove_teacher_status(self) -> None:
         self.is_teacher = False
         self.teacher_name = None
 
-    def _get_status_str(self):
+    def _get_status_str(self) -> str:
+        if self.is_admin:
+            return "Администратор"
         if self.is_teacher:
             return "Преподаватель"
-        if self.is_admin:
-            return "Персонал"
         return "Пользователь"
 
     def to_text(self) -> str:
+        status = self._get_status_str()
+        notify_status = "Включена" if self.daily_notify else "Выключена"
+        notify_time_str = f"{self.notify_time}:00" if self.daily_notify else "-"
+
         if self.is_teacher:
-            base_str = (
-                f"Имя пользователя: {self.name}\n"
-                f"Преподаватель: {self.teacher_name}\n"
-
+            return (
+                f"👤 Имя пользователя: {self.name}\n"
+                f"🧑‍🏫 Преподаватель: {self.teacher_name or 'Не указано'}\n"
+                f"📧 Ежедневная рассылка: {notify_status}\n"
+                f"⏰ Время рассылки: {notify_time_str}\n"
+                f"👑 Статус: {status}"
             )
-        else:
-            base_str = (
-                f"Имя пользователя: {self.name}\n"
-                f"Факультет: {self.group.faculty}\n"
-                f"Группа: {self.group.get_short_name()}\n"
-                f"Подгруппа: {self.subgroup}\n"
+        if self.group:
+            return (
+                f"👤 Имя пользователя: {self.name}\n"
+                f"🏛️ Факультет: {self.group.faculty}\n"
+                f"🎓 Группа: {self.group.get_short_name()}\n"
+                f"🔢 Подгруппа: {self.subgroup or 'Не указана'}\n"
+                f"📧 Ежедневная рассылка: {notify_status}\n"
+                f"⏰ Время рассылки: {notify_time_str}\n"
+                f"👑 Статус: {status}"
             )
-
-        return base_str + (
-            f"Ежедневная рассылка: {'Включена' if self.daily_notify else 'Выключена'}\n"
-            f"Время рассылки: {self.notify_time}:00\n"
-            f"Статус: {self._get_status_str()}"
+        return (
+            f"👤 Имя пользователя: {self.name}\n"
+            f"⚠️ Группа не выбрана. Завершите регистрацию (/start)."
         )
-
-
-Group.users = relationship(
-    "User",
-    order_by=User.id,
-    back_populates="group",
-)
 
 
 class Schedule(Base):
@@ -101,27 +101,30 @@ class Schedule(Base):
 
     group = relationship("Group", back_populates="schedules")
 
-    def to_text(self, is_teacher=False) -> str:
+    def to_text(self, is_requesting_teacher: bool = False) -> str:
         start_time, end_time = LESSON_TIMES.get(self.lesson_number, ("-", "-"))
-        text = (
-            f"{self.lesson_number} пара ({start_time} - {end_time})\n"
-            f"├Предмет: {self.subject or 'не указано'}\n"
-            f"├Формат: {self.lesson_type or 'не указано'}\n"
-            f"├Кабинет: {self.room or 'не указано'}\n"
-            f"├Преподаватель: {self.teacher or 'не указано'}\n"
+        details = [
+            f"Предмет: {self.subject or 'не указано'}",
+            f"Формат: {self.lesson_type or 'не указано'}",
+            f"Кабинет: {self.room or 'не указано'}",
+        ]
+        if is_requesting_teacher:
+            details.append(
+                f"Группа: {self.group.get_short_name() if self.group else '??'}",
+            )
+        else:
+            details.append(
+                f"Преподаватель: {self.teacher or 'не указано'}",
+            )
+
+        return (
+            f"🕒 {self.lesson_number} пара ({start_time} - {end_time})\n"
+            f"├{'\n├'.join(details)}\n"
         )
 
-        if is_teacher:
-            text += f"├Группа: {self.group.get_short_name()}\n"
 
-        return text
-
-
-Group.schedules = relationship(
-    "Schedule",
-    order_by=Schedule.id,
-    back_populates="group",
-)
+Group.users = relationship("User", order_by=User.id, back_populates="group")
+Group.schedules = relationship("Schedule", order_by=Schedule.id, back_populates="group")
 
 
 __all__ = [

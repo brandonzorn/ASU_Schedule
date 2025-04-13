@@ -33,10 +33,10 @@ async def users_list(update: Update, _):
 async def users_stats(update: Update, _):
     users = session.query(User).all()
     await update.message.reply_text(
-        f"<b>Статистика пользователей:</b>\n\n"
-        f"Всего пользователей: {len(users)}\n"
-        f"Преподавателей: {len([i for i in users if i.is_teacher])}\n"
-        f"Включена ежедневная рассылка: {len([i for i in users if i.daily_notify])}",
+        f"📊 <b>Статистика пользователей:</b>\n\n"
+        f"▪️ Всего пользователей: {len(users)}\n"
+        f"▪️ Преподавателей: {len([i for i in users if i.is_teacher])}\n"
+        f"▪️ Включена ежедневная рассылка: {len([i for i in users if i.daily_notify])}",
         parse_mode=ParseMode.HTML,
     )
 
@@ -48,9 +48,11 @@ async def message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         users = session.query(User).all()
         for user in users:
             await context.bot.send_message(chat_id=user.id, text=msg)
-        await update.message.reply_text("Сообщение отправлено.")
+        await update.message.reply_text("✅ Сообщение отправлено.")
     else:
-        await update.message.reply_text("Пожалуйста, укажите сообщение после команды.")
+        await update.message.reply_text(
+            "⚠️ Пожалуйста, укажите сообщение после команды.",
+        )
 
 
 @require_staff
@@ -58,7 +60,7 @@ async def turn_off_daily_notify(update: Update, _):
     session.query(User).update({User.daily_notify: False})
     session.commit()
     await update.message.reply_text(
-        "Ежедневные уведомления отключены для всех пользователей.",
+        "🌙 Ежедневные уведомления отключены для всех пользователей.",
     )
 
 
@@ -66,7 +68,9 @@ async def turn_off_daily_notify(update: Update, _):
 async def delete_all_schedules(update: Update, _):
     session.query(Schedule).delete()
     session.commit()
-    await update.message.reply_text("Все расписания успешно удалены.")
+    await update.message.reply_text(
+        "🗑️ Все расписания успешно удалены.",
+    )
 
 
 async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:

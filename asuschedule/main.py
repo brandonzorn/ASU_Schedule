@@ -58,12 +58,6 @@ async def schedule_handler(update: Update, _) -> None:
     date = datetime.datetime.now(tz=TIMEZONE)
     schedules = get_schedules(user, date.weekday(), is_even_week(date))
 
-    if not schedules:
-        await update.message.reply_text(
-            "Расписание не найдено.",
-            reply_markup=get_main_keyboard(),
-        )
-        return
     schedule_text = get_schedule_text(user, schedules, date)
     await update.message.reply_text(
         schedule_text,
@@ -79,12 +73,6 @@ async def next_day_schedule_handler(update: Update, _) -> None:
     date = datetime.datetime.now(tz=TIMEZONE) + datetime.timedelta(days=1)
     schedules = get_schedules(user, date.weekday(), is_even_week(date))
 
-    if not schedules:
-        await update.message.reply_text(
-            "Расписание не найдено.",
-            reply_markup=get_main_keyboard(),
-        )
-        return
     schedule_text = get_schedule_text(user, schedules, date)
     await update.message.reply_text(
         schedule_text,
@@ -126,12 +114,6 @@ async def daily_schedule_handler(context: ContextTypes.DEFAULT_TYPE) -> None:
     )
     for user in users:
         schedules = get_schedules(user, date.weekday(), is_even_week(date))
-        if not schedules:
-            await context.bot.send_message(
-                chat_id=user.id,
-                text="Расписание не найдено.",
-            )
-            continue
         schedule_text = get_schedule_text(user, schedules, date)
         await context.bot.send_message(
             chat_id=user.id,
