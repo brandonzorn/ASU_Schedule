@@ -19,7 +19,7 @@ def get_schedules(
             Schedule.teacher.ilike(f"%{user.teacher_name}%"),
         )
     else:
-        query = query.filter_by(group_id=user.group.id).filter(
+        query = query.filter_by(group_id=user.group_id).filter(
             or_(
                 Schedule.subgroup.is_(None),
                 Schedule.subgroup == user.subgroup,
