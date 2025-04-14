@@ -9,6 +9,7 @@ from telegram.ext import (
     ConversationHandler,
     filters,
     MessageHandler,
+    ContextTypes,
 )
 
 from database import session
@@ -33,8 +34,10 @@ async def keyboard_time(update: Update, _) -> int:
     return TIME_SELECTION
 
 
-async def time_selection(update: Update, _):
+async def time_selection(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
+    if query.data == "cancel":
+        return await cancel(update, context)
     await query.answer()
 
     selected_time = query.data
@@ -74,7 +77,14 @@ daily_time_selection_handler = ConversationHandler(
             CallbackQueryHandler(time_selection),
         ],
     },
-    fallbacks=[CommandHandler("cancel", cancel)],
+    fallbacks=[
+        CommandHandler("cancel", cancel),
+        CommandHandler("notify_time", keyboard_time),
+        MessageHandler(
+            filters.TEXT & filters.Regex(r"(?i)^Ежедневная рассылка$"),
+            keyboard_time,
+        ),
+    ],
 )
 
 __all__ = [

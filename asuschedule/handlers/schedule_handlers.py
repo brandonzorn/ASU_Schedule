@@ -54,6 +54,8 @@ async def schedules_table(update: Update, _) -> int | None:
 
 async def select_day(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int | None:
     query = update.callback_query
+    if query.data == "cancel":
+        return await cancel(update, context)
     await query.answer()
 
     user = session.query(User).filter_by(id=update.effective_user.id).first()
@@ -69,6 +71,10 @@ async def select_day(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int 
     return ConversationHandler.END
 
 
+async def cancel(_update, _context):
+    return ConversationHandler.END
+
+
 schedules_table_handler = ConversationHandler(
     entry_points=[
         CommandHandler("schedule_days", schedules_table),
@@ -80,7 +86,14 @@ schedules_table_handler = ConversationHandler(
     states={
         SELECT_DAY: [CallbackQueryHandler(select_day)],
     },
-    fallbacks=[CommandHandler("schedule_days", schedules_table)],
+    fallbacks=[
+        CommandHandler("cancel", cancel),
+        CommandHandler("schedule_days", schedules_table),
+        MessageHandler(
+            filters.TEXT & filters.Regex(r"(?i)^Выбрать день$"),
+            schedules_table,
+        ),
+    ],
 )
 
 __all__ = [

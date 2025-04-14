@@ -268,6 +268,8 @@ registration_handler = ConversationHandler(
     fallbacks=[
         CommandHandler("cancel", cancel),
         CallbackQueryHandler(cancel, pattern="^cancel$"),
+        CommandHandler("start", start),
+        MessageHandler(filters.TEXT & filters.Regex(r"(?i)^Изменить группу$"), start),
     ],
 )
 
