@@ -15,12 +15,12 @@ from config import BOT_TOKEN
 from consts import LESSON_TIMES, TIMEZONE
 from database import session
 from handlers import (
-    daily_time_selection_handler,
+    notify_time_handler,
     delete_all_schedules_handler,
     handle_file,
     message_handler,
     registration_handler,
-    schedules_table_handler,
+    schedule_table_handler,
     turn_off_daily_notify_handler,
     users_list_handler,
     users_stats_handler,
@@ -190,8 +190,8 @@ def main() -> None:
     application.add_handler(MessageHandler(filters.Document.ALL, handle_file))
 
     application.add_handler(registration_handler)
-    application.add_handler(schedules_table_handler)
-    application.add_handler(daily_time_selection_handler)
+    application.add_handler(schedule_table_handler)
+    application.add_handler(notify_time_handler)
     application.run_polling()
 
 

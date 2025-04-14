@@ -17,10 +17,16 @@ from database import session
 from models import Group, Schedule, User
 from utils import get_main_keyboard
 
-FACULTY, COURSE, SPECIALITY, SUBGROUP, TEACHER = range(5)
+(
+    SELECT_FACULTY,
+    SELECT_COURSE,
+    SELECT_SPECIALITY,
+    SELECT_SUBGROUP,
+    SELECT_TEACHER,
+) = range(5)
 
 
-async def start(update: Update, _) -> int:
+async def start_registration(update: Update, _) -> int:
     faculties = [
         faculty[:32] for (faculty,) in session.query(
             Group.faculty,
@@ -29,23 +35,22 @@ async def start(update: Update, _) -> int:
     keyboard = [
         [
             InlineKeyboardButton(
-                f"{faculty}", callback_data=f"{faculty}",
+                f"{faculty}", callback_data=f"regFac_{faculty}",
             ),
         ] for faculty in faculties
     ]
-    keyboard.append([InlineKeyboardButton("Отмена", callback_data="cancel")])
+    keyboard.append([InlineKeyboardButton("Отмена", callback_data="reg_cancel")])
     reply_markup = InlineKeyboardMarkup(keyboard)
 
     await update.message.reply_text("Выберите факультет:", reply_markup=reply_markup)
-    return FACULTY
+    return SELECT_FACULTY
 
 
-async def faculty_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+async def select_faculty(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     query = update.callback_query
-    if query.data == "cancel":
-        return await cancel(update, context)
     await query.answer()
-    context.user_data["faculty"] = query.data
+    context.user_data["faculty"] = query.data.split("_")[-1]
+
     courses = [
         course for (course,) in session.query(
             Group.course,
@@ -56,27 +61,25 @@ async def faculty_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     keyboard = [
         [
             InlineKeyboardButton(
-                f"{course} курс", callback_data=f"{course}",
+                f"{course} курс", callback_data=f"regCourse_{course}",
             ) for course in courses
         ],
-        [InlineKeyboardButton("Преподаватель", callback_data="teacher")],
-        [InlineKeyboardButton("Отмена", callback_data="cancel")],
+        [InlineKeyboardButton("Преподаватель", callback_data="reg_teacher")],
+        [InlineKeyboardButton("Отмена", callback_data="reg_cancel")],
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
     await query.edit_message_text("Выберите курс:", reply_markup=reply_markup)
-    return COURSE
+    return SELECT_COURSE
 
 
-async def course_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+async def select_course(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     query = update.callback_query
-    if query.data == "cancel":
-        return await cancel(update, context)
     await query.answer()
-    context.user_data["course"] = query.data
+    context.user_data["course"] = query.data.split("_")[-1]
 
     specialities = [
-        speciality[:32] for (speciality,) in session.query(
+        speciality for (speciality,) in session.query(
             Group.speciality,
         ).filter(
             Group.course == context.user_data["course"],
@@ -86,30 +89,57 @@ async def course_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     keyboard = [
         [
             InlineKeyboardButton(
-                f"{speciality}", callback_data=f"{speciality}",
-            ) for speciality in specialities
-        ],
-        [InlineKeyboardButton("Отмена", callback_data="cancel")],
+                f"{speciality[:32]}", callback_data=f"regSpec_{speciality[:24]}",
+            ),
+        ] for speciality in specialities
     ]
+    keyboard.append([InlineKeyboardButton("Отмена", callback_data="reg_cancel")])
     reply_markup = InlineKeyboardMarkup(keyboard)
 
     await query.edit_message_text("Выберите специальность:", reply_markup=reply_markup)
-    return SPECIALITY
+    return SELECT_SPECIALITY
 
 
-async def speciality_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+async def select_teacher(update: Update, _) -> int:
     query = update.callback_query
-    if query.data == "cancel":
-        return await cancel(update, context)
     await query.answer()
-    context.user_data["speciality"] = query.data
+
+    teachers = [
+        teacher for (teacher,) in session.query(
+            Schedule.teacher,
+        ).filter(
+            Schedule.teacher.isnot(None),
+            ~Schedule.teacher.contains("/"),
+        ).distinct().order_by(Schedule.teacher).all()
+    ]
 
     keyboard = [
         [
-            InlineKeyboardButton("1 Подгруппа", callback_data="1"),
-            InlineKeyboardButton("2 Подгруппа", callback_data="2"),
+            InlineKeyboardButton(f"{teacher}", callback_data=f"regTeacher_{teacher}"),
+        ] for teacher in teachers
+    ]
+    keyboard.append(
+        [
+            InlineKeyboardButton("Отмена", callback_data="reg_cancel"),
         ],
-        [InlineKeyboardButton("Отмена", callback_data="cancel")],
+    )
+    reply_markup = InlineKeyboardMarkup(keyboard)
+
+    await query.edit_message_text("Выберите преподавателя:", reply_markup=reply_markup)
+    return SELECT_TEACHER
+
+
+async def select_speciality(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    query = update.callback_query
+    await query.answer()
+    context.user_data["speciality"] = query.data.split("_")[-1]
+
+    keyboard = [
+        [
+            InlineKeyboardButton("1 Подгруппа", callback_data="regSubgroup_1"),
+            InlineKeyboardButton("2 Подгруппа", callback_data="regSubgroup_2"),
+        ],
+        [InlineKeyboardButton("Отмена", callback_data="reg_cancel")],
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -117,19 +147,17 @@ async def speciality_callback(update: Update, context: ContextTypes.DEFAULT_TYPE
         "Выберите подгруппу:",
         reply_markup=reply_markup,
     )
-    return SUBGROUP
+    return SELECT_SUBGROUP
 
 
-async def subgroup_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+async def select_subgroup(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     query = update.callback_query
-    if query.data == "cancel":
-        return await cancel(update, context)
     await query.answer()
 
     user_id = query.from_user.id
     name = query.from_user.first_name
     username = query.from_user.username
-    subgroup = int(query.data)
+    subgroup = int(query.data.split("_")[-1])
 
     course = context.user_data["course"]
     faculty = context.user_data["faculty"]
@@ -169,50 +197,17 @@ async def subgroup_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) 
     return ConversationHandler.END
 
 
-async def teacher_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    query = update.callback_query
-    if query.data == "cancel":
-        return await cancel(update, context)
-    await query.answer()
-
-    teachers = [
-        teacher for (teacher,) in session.query(
-            Schedule.teacher,
-        ).filter(
-            Schedule.teacher.isnot(None),
-            ~Schedule.teacher.contains("/"),
-        ).distinct().order_by(Schedule.teacher).all()
-    ]
-
-    keyboard = [
-        [
-            InlineKeyboardButton(f"{teacher}", callback_data=f"{teacher}"),
-        ] for teacher in teachers
-    ]
-    keyboard.append(
-        [
-            InlineKeyboardButton("Отмена", callback_data="cancel"),
-        ],
-    )
-    reply_markup = InlineKeyboardMarkup(keyboard)
-
-    await query.edit_message_text("Выберите преподавателя:", reply_markup=reply_markup)
-    return TEACHER
-
-
 async def finalize_registration(
         update: Update,
-        context: ContextTypes.DEFAULT_TYPE,
+        _,
 ) -> int:
     query = update.callback_query
-    if query.data == "cancel":
-        return await cancel(update, context)
     await query.answer()
 
     user_id = query.from_user.id
     name = query.from_user.first_name
     username = query.from_user.username
-    teacher_name = query.data
+    teacher_name = query.data.split("_")[-1]
 
     user = session.query(User).filter_by(id=user_id).first()
     if not user:
@@ -253,22 +248,32 @@ async def cancel(update: Update, _) -> int:
 registration_handler = ConversationHandler(
     allow_reentry=True,
     entry_points=[
-        CommandHandler("start", start),
-        MessageHandler(filters.TEXT & filters.Regex(r"(?i)^Изменить группу$"), start),
+        CommandHandler("start", start_registration),
+        MessageHandler(
+            filters.TEXT & filters.Regex(r"(?i)^Изменить группу$"), start_registration,
+        ),
     ],
     states={
-        FACULTY: [CallbackQueryHandler(faculty_callback)],
-        COURSE: [
-            CallbackQueryHandler(course_callback, pattern=r"^\d+$"),
-            CallbackQueryHandler(teacher_callback, pattern="^teacher$"),
+        SELECT_FACULTY: [
+            CallbackQueryHandler(select_faculty, pattern=r"^regFac_"),
         ],
-        SPECIALITY: [CallbackQueryHandler(speciality_callback)],
-        SUBGROUP: [CallbackQueryHandler(subgroup_callback)],
-        TEACHER: [CallbackQueryHandler(finalize_registration)],
+        SELECT_COURSE: [
+            CallbackQueryHandler(select_course, pattern=r"^regCourse_"),
+            CallbackQueryHandler(select_teacher, pattern=r"^reg_teacher$"),
+        ],
+        SELECT_SPECIALITY: [
+            CallbackQueryHandler(select_speciality, pattern=r"^regSpec_"),
+        ],
+        SELECT_SUBGROUP: [
+            CallbackQueryHandler(select_subgroup, pattern=r"^regSubgroup_"),
+        ],
+        SELECT_TEACHER: [
+            CallbackQueryHandler(finalize_registration, pattern=r"^regTeacher_"),
+        ],
     },
     fallbacks=[
         CommandHandler("cancel", cancel),
-        CallbackQueryHandler(cancel, pattern="^cancel$"),
+        CallbackQueryHandler(cancel, pattern="^reg_cancel$"),
     ],
 )
 

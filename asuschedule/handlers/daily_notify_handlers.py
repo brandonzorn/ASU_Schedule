@@ -9,50 +9,47 @@ from telegram.ext import (
     ConversationHandler,
     filters,
     MessageHandler,
-    ContextTypes,
 )
 
 from database import session
 from models import User
 from utils import require_registration
 
-TIME_SELECTION = 0
+SELECT_NOTIFY_TIME = 5
 
 
 @require_registration
-async def keyboard_time(update: Update, _) -> int:
+async def start_notify_time(update: Update, _) -> int:
     keyboard = [
-        [InlineKeyboardButton("8:00", callback_data="8")],
-        [InlineKeyboardButton("20:00", callback_data="20")],
-        [InlineKeyboardButton("Выключить", callback_data="disable")],
+        [InlineKeyboardButton("8:00 (Утром)", callback_data="notifyTime_8")],
+        [InlineKeyboardButton("20:00 (Вечером)", callback_data="notifyTime_20")],
+        [InlineKeyboardButton("Выключить", callback_data="notifyTime_disable")],
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     await update.message.reply_text(
-        "Настройка ежедневной рассылки:",
+        "Выберите желаемое время для ежедневной рассылки расписания:",
         reply_markup=reply_markup,
     )
-    return TIME_SELECTION
+    return SELECT_NOTIFY_TIME
 
 
-async def time_selection(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def select_notify_time(update: Update, _):
     query = update.callback_query
-    if query.data == "cancel":
-        return await cancel(update, context)
     await query.answer()
+    user_choice = query.data.split("_")[-1]
 
-    selected_time = query.data
     user = session.query(User).filter_by(id=query.from_user.id).first()
     if user:
-        if selected_time == "disable":
+        if user_choice == "disable":
             await query.edit_message_text(
-                "Ежедневная рассылка выключена",
+                "Ежедневная рассылка выключена.",
             )
             user.daily_notify = False
         else:
-            user.notify_time = int(selected_time)
+            user.notify_time = int(user_choice)
             user.daily_notify = True
             await query.edit_message_text(
-                f"Вы выбрали время рассылки: {selected_time} часов",
+                f"Вы выбрали время рассылки: {user_choice}:00",
             )
         session.commit()
 
@@ -64,18 +61,18 @@ async def cancel(update: Update, _):
     return ConversationHandler.END
 
 
-daily_time_selection_handler = ConversationHandler(
+notify_time_handler = ConversationHandler(
     allow_reentry=True,
     entry_points=[
-        CommandHandler("notify_time", keyboard_time),
+        CommandHandler("notify_time", start_notify_time),
         MessageHandler(
             filters.TEXT & filters.Regex(r"(?i)^Ежедневная рассылка$"),
-            keyboard_time,
+            start_notify_time,
         ),
     ],
     states={
-        TIME_SELECTION: [
-            CallbackQueryHandler(time_selection),
+        SELECT_NOTIFY_TIME: [
+            CallbackQueryHandler(select_notify_time, pattern="^notifyTime_"),
         ],
     },
     fallbacks=[
@@ -84,5 +81,5 @@ daily_time_selection_handler = ConversationHandler(
 )
 
 __all__ = [
-    daily_time_selection_handler,
+    notify_time_handler,
 ]

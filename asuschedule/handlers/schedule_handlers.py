@@ -7,7 +7,6 @@ from telegram.constants import ParseMode
 from telegram.ext import (
     CallbackQueryHandler,
     CommandHandler,
-    ContextTypes,
     ConversationHandler,
     MessageHandler,
     filters,
@@ -15,34 +14,27 @@ from telegram.ext import (
 
 from consts import DAY_NAMES, WEEK_NAMES
 from database import session
-from models import Schedule, User
+from models import User
 from schedules.schedules import get_schedules
 from schedules.schedules_text import get_schedule_text_by_day
 from utils import require_registration
 
-SELECT_DAY = 0
+SELECT_DAY = 6
 
 
 @require_registration
-async def schedules_table(update: Update, _) -> int | None:
-    days = [
-        day for (day,) in session.query(
-            Schedule.day_of_week,
-        ).order_by(
-            Schedule.day_of_week,
-        ).distinct().all()
-    ]
+async def start_schedule(update: Update, _) -> int | None:
     keyboard = [
         [
             InlineKeyboardButton(
                 f"{DAY_NAMES[day]} ({WEEK_NAMES[0]})",
-                callback_data=f"{day}_0",
+                callback_data=f"scheduleDay_{day}_0",
             ),
             InlineKeyboardButton(
                 f"{DAY_NAMES[day]} ({WEEK_NAMES[1]})",
-                callback_data=f"{day}_1",
+                callback_data=f"scheduleDay_{day}_1",
             ),
-        ] for day in days
+        ] for day in DAY_NAMES
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     await update.message.reply_text(
@@ -52,16 +44,14 @@ async def schedules_table(update: Update, _) -> int | None:
     return SELECT_DAY
 
 
-async def select_day(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int | None:
+async def select_day(update: Update, _) -> int | None:
     query = update.callback_query
-    if query.data == "cancel":
-        return await cancel(update, context)
     await query.answer()
+    user_choice = query.data.split("_")
 
     user = session.query(User).filter_by(id=update.effective_user.id).first()
 
-    day_data = query.data.split("_")
-    day, is_even_week = (int(day_data[0]), bool(int(day_data[1])))
+    day, is_even_week = (int(user_choice[-2]), bool(int(user_choice[-1])))
 
     schedules = get_schedules(user, day, is_even_week)
     schedules_text = get_schedule_text_by_day(user, schedules, day, is_even_week)
@@ -74,17 +64,17 @@ async def cancel(_update, _context):
     return ConversationHandler.END
 
 
-schedules_table_handler = ConversationHandler(
+schedule_table_handler = ConversationHandler(
     allow_reentry=True,
     entry_points=[
-        CommandHandler("schedule_days", schedules_table),
+        CommandHandler("schedule_days", start_schedule),
         MessageHandler(
             filters.TEXT & filters.Regex(r"(?i)^Выбрать день$"),
-            schedules_table,
+            start_schedule,
         ),
     ],
     states={
-        SELECT_DAY: [CallbackQueryHandler(select_day)],
+        SELECT_DAY: [CallbackQueryHandler(select_day, pattern="^scheduleDay_")],
     },
     fallbacks=[
         CommandHandler("cancel", cancel),
@@ -92,5 +82,5 @@ schedules_table_handler = ConversationHandler(
 )
 
 __all__ = [
-    schedules_table_handler,
+    schedule_table_handler,
 ]
