@@ -97,10 +97,16 @@ async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> N
     )
 
     admin_user = session.query(User).filter_by(is_admin=True).first()
+    if admin_user:
+        await context.bot.send_message(
+            chat_id=admin_user.id,
+            text=err_message,
+            parse_mode=ParseMode.HTML,
+        )
 
     await context.bot.send_message(
-        chat_id=admin_user.id,
-        text=err_message,
+        chat_id=update.effective_chat.id,
+        text="😔 Ой, что-то пошло не так... Произошла внутренняя ошибка.",
         parse_mode=ParseMode.HTML,
     )
 
