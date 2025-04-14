@@ -16,7 +16,7 @@ from database import session
 from models import User
 from utils import require_registration
 
-TIME_SELECTION = 1
+TIME_SELECTION = 0
 
 
 @require_registration
@@ -65,6 +65,7 @@ async def cancel(update: Update, _):
 
 
 daily_time_selection_handler = ConversationHandler(
+    allow_reentry=True,
     entry_points=[
         CommandHandler("notify_time", keyboard_time),
         MessageHandler(
@@ -79,11 +80,6 @@ daily_time_selection_handler = ConversationHandler(
     },
     fallbacks=[
         CommandHandler("cancel", cancel),
-        CommandHandler("notify_time", keyboard_time),
-        MessageHandler(
-            filters.TEXT & filters.Regex(r"(?i)^Ежедневная рассылка$"),
-            keyboard_time,
-        ),
     ],
 )
 

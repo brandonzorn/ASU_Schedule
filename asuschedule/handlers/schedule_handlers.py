@@ -20,7 +20,7 @@ from schedules.schedules import get_schedules
 from schedules.schedules_text import get_schedule_text_by_day
 from utils import require_registration
 
-SELECT_DAY, SHOW_SCHEDULE = range(2)
+SELECT_DAY = 0
 
 
 @require_registration
@@ -60,7 +60,6 @@ async def select_day(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int 
 
     user = session.query(User).filter_by(id=update.effective_user.id).first()
 
-    context.user_data["selected_day"] = query.data
     day_data = query.data.split("_")
     day, is_even_week = (int(day_data[0]), bool(int(day_data[1])))
 
@@ -76,6 +75,7 @@ async def cancel(_update, _context):
 
 
 schedules_table_handler = ConversationHandler(
+    allow_reentry=True,
     entry_points=[
         CommandHandler("schedule_days", schedules_table),
         MessageHandler(
@@ -88,11 +88,6 @@ schedules_table_handler = ConversationHandler(
     },
     fallbacks=[
         CommandHandler("cancel", cancel),
-        CommandHandler("schedule_days", schedules_table),
-        MessageHandler(
-            filters.TEXT & filters.Regex(r"(?i)^Выбрать день$"),
-            schedules_table,
-        ),
     ],
 )
 

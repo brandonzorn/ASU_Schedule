@@ -251,6 +251,7 @@ async def cancel(update: Update, _) -> int:
 
 
 registration_handler = ConversationHandler(
+    allow_reentry=True,
     entry_points=[
         CommandHandler("start", start),
         MessageHandler(filters.TEXT & filters.Regex(r"(?i)^Изменить группу$"), start),
@@ -268,8 +269,6 @@ registration_handler = ConversationHandler(
     fallbacks=[
         CommandHandler("cancel", cancel),
         CallbackQueryHandler(cancel, pattern="^cancel$"),
-        CommandHandler("start", start),
-        MessageHandler(filters.TEXT & filters.Regex(r"(?i)^Изменить группу$"), start),
     ],
 )
 
