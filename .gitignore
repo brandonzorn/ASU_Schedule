@@ -1,7 +1,6 @@
 .idea
 venv
-for_docker
+etc_asuschedule
 sqlite
 .env
-database.db
-groups.json
+*.db
