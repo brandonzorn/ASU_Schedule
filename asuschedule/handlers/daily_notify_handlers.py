@@ -81,5 +81,5 @@ notify_time_handler = ConversationHandler(
 )
 
 __all__ = [
-    notify_time_handler,
+    "notify_time_handler",
 ]

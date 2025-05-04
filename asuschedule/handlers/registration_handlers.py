@@ -279,5 +279,5 @@ registration_handler = ConversationHandler(
 
 
 __all__ = [
-    registration_handler,
+    "registration_handler",
 ]

@@ -59,6 +59,8 @@ def is_even_week(date) -> bool:
 
 
 __all__ = [
-    require_registration,
-    is_even_week,
+    "get_main_keyboard",
+    "is_even_week",
+    "require_registration",
+    "require_staff",
 ]

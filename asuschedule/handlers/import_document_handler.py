@@ -109,5 +109,5 @@ async def handle_file(update: Update, _):
 
 
 __all__ = [
-    handle_file,
+    "handle_file",
 ]

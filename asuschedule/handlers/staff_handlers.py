@@ -124,9 +124,10 @@ delete_all_schedules_handler = CommandHandler(
 )
 
 __all__ = [
-    message_handler,
-    users_list_handler,
-    users_stats_handler,
-    turn_off_daily_notify_handler,
-    error_handler,
+    "delete_all_schedules_handler",
+    "error_handler",
+    "message_handler",
+    "turn_off_daily_notify_handler",
+    "users_list_handler",
+    "users_stats_handler",
 ]

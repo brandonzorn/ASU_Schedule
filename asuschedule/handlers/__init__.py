@@ -12,14 +12,14 @@ from .staff_handlers import (
 )
 
 __all__ = [
-    registration_handler,
-    schedule_table_handler,
-    notify_time_handler,
-    message_handler,
-    users_list_handler,
-    users_stats_handler,
-    turn_off_daily_notify_handler,
-    delete_all_schedules_handler,
-    handle_file,
-    error_handler,
+    "registration_handler",
+    "schedule_table_handler",
+    "notify_time_handler",
+    "message_handler",
+    "users_list_handler",
+    "users_stats_handler",
+    "turn_off_daily_notify_handler",
+    "delete_all_schedules_handler",
+    "handle_file",
+    "error_handler",
 ]

@@ -31,5 +31,5 @@ def get_schedules(
 
 
 __all__ = [
-    get_schedules,
+    "get_schedules",
 ]

@@ -37,7 +37,7 @@ def get_schedule_text_by_day(
 
 
 __all__ = [
-    get_next_lesson_text,
-    get_schedule_text,
-    get_schedule_text_by_day,
+    "get_next_lesson_text",
+    "get_schedule_text",
+    "get_schedule_text_by_day",
 ]

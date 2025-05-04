@@ -128,7 +128,8 @@ Group.schedules = relationship("Schedule", order_by=Schedule.id, back_populates=
 
 
 __all__ = [
-    Group,
-    User,
-    Schedule,
+    "Base",
+    "Group",
+    "Schedule",
+    "User",
 ]

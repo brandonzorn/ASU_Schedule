@@ -82,5 +82,5 @@ schedule_table_handler = ConversationHandler(
 )
 
 __all__ = [
-    schedule_table_handler,
+    "schedule_table_handler",
 ]
