@@ -174,17 +174,14 @@ async def select_subgroup(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
             id=user_id,
             username=username,
             name=name,
-            subgroup=subgroup,
-            group_id=group.id,
         )
+        new_user.make_student(group.id, subgroup)
         session.add(new_user)
         await query.edit_message_text(
             f"Регистрация завершена! Привет, {name}.",
         )
     else:
-        user.subgroup = subgroup
-        user.group_id = group.id
-        user.remove_teacher_status()
+        user.make_student(group.id, subgroup)
         await query.edit_message_text(
             "Ваша группа изменена.",
         )

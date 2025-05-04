@@ -41,12 +41,18 @@ class User(Base):
         return bool(self.is_admin)
 
     def make_teacher(self, teacher_name: str) -> None:
+        self.subgroup = None
+        self.group_id = None
+
         self.is_teacher = True
         self.teacher_name = teacher_name
 
-    def remove_teacher_status(self) -> None:
+    def make_student(self, group_id: int, subgroup: int) -> None:
         self.is_teacher = False
         self.teacher_name = None
+
+        self.subgroup = subgroup
+        self.group_id = group_id
 
     def _get_status_str(self) -> str:
         if self.is_admin:
