@@ -2,5 +2,7 @@
 venv
 etc_asuschedule
 sqlite
+logs
 .env
 *.db
+*.log

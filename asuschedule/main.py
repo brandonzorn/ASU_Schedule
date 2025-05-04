@@ -1,5 +1,6 @@
 import datetime
 import logging
+from pathlib import Path
 
 from telegram import Update
 from telegram.constants import ParseMode
@@ -34,10 +35,17 @@ from utils import get_main_keyboard, is_even_week, require_registration
 
 __all__ = []
 
-
+Path("logs").mkdir(exist_ok=True)
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     level=logging.INFO,
+    handlers=[
+        logging.FileHandler(
+            datetime.datetime.now().strftime("logs/%Y-%m-%d_%H-%M-%S.log"),
+            encoding="utf-8",
+        ),
+        logging.StreamHandler(),
+    ],
 )
 logging.getLogger("httpx").setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)

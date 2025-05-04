@@ -21,7 +21,6 @@ days_of_week = {
 
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
 
 
 @require_staff
