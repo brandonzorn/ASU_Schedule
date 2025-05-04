@@ -41,7 +41,7 @@ logging.basicConfig(
     level=logging.INFO,
     handlers=[
         logging.FileHandler(
-            datetime.datetime.now().strftime("logs/%Y-%m-%d_%H-%M-%S.log"),
+            datetime.datetime.now(tz=TIMEZONE).strftime("logs/%Y-%m-%d_%H-%M-%S.log"),
             encoding="utf-8",
         ),
         logging.StreamHandler(),

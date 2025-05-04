@@ -1,4 +1,4 @@
-import pytz
+from zoneinfo import ZoneInfo
 
 from config import USE_ALTERNATE_LESSON_TIMES
 
@@ -35,4 +35,4 @@ DAY_NAMES = {
 }
 
 
-TIMEZONE = pytz.timezone("Europe/Moscow")
+TIMEZONE = ZoneInfo("Europe/Moscow")
