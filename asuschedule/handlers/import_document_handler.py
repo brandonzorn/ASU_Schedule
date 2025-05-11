@@ -87,8 +87,8 @@ async def handle_file(update: Update, _):
                     ),
                 )
                 logger.info(
-                    f"Добавлено расписание для группы"
-                    f"ID {group.get_name()} и пары номер {lesson_number} "
+                    f"Добавлено расписание для группы "
+                    f"{group.get_name()} и пары номер {lesson_number} "
                     f"в {day_of_week} ({WEEK_NAMES[int(is_even_week)]}).",
                 )
 
