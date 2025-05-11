@@ -56,7 +56,12 @@ async def message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 @require_staff
-async def turn_off_daily_notify(update: Update, _):
+async def turn_off_daily_notify(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if "confirm" not in context.args:
+        await update.message.reply_text(
+            "❗ Требуется подтверждение операции (укажите 'confirm' после команды).",
+        )
+        return
     session.query(User).update({User.daily_notify: False})
     session.commit()
     await update.message.reply_text(
@@ -65,7 +70,12 @@ async def turn_off_daily_notify(update: Update, _):
 
 
 @require_staff
-async def delete_all_schedules(update: Update, _):
+async def delete_all_schedules(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if "confirm" not in context.args:
+        await update.message.reply_text(
+            "❗ Требуется подтверждение операции (укажите 'confirm' после команды).",
+        )
+        return
     session.query(Schedule).delete()
     session.commit()
     await update.message.reply_text(
