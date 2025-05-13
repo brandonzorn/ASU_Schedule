@@ -8,6 +8,7 @@ from telegram.constants import ParseMode
 from telegram.ext import CommandHandler, ContextTypes
 
 from database import session
+from enums import UserStatus, UserRole
 from models import Schedule, User
 from utils import require_staff
 
@@ -17,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 @require_staff
 async def users_list(update: Update, _):
-    users = session.query(User).order_by(User.is_teacher).all()
+    users = session.query(User).order_by(User.role).all()
     chunk_size = 15
     user_chunks = [users[i:i + chunk_size] for i in range(0, len(users), chunk_size)]
 
@@ -35,7 +36,7 @@ async def users_stats(update: Update, _):
     await update.message.reply_text(
         f"📊 <b>Статистика пользователей:</b>\n\n"
         f"▪️ Всего пользователей: {len(users)}\n"
-        f"▪️ Преподавателей: {len([i for i in users if i.is_teacher])}\n"
+        f"▪️ Преподавателей: {len([i for i in users if i.role == UserRole.TEACHER])}\n"
         f"▪️ Включена ежедневная рассылка: {len([i for i in users if i.daily_notify])}",
         parse_mode=ParseMode.HTML,
     )
@@ -106,7 +107,7 @@ async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> N
         f"<pre>{html.escape(tb_string)}</pre>"
     )
 
-    admin_user = session.query(User).filter_by(is_admin=True).first()
+    admin_user = session.query(User).filter_by(status=UserStatus.ADMIN).first()
     if admin_user:
         await context.bot.send_message(
             chat_id=admin_user.id,

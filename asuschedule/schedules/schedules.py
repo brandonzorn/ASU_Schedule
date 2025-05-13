@@ -1,6 +1,7 @@
 from sqlalchemy import or_
 
 from database import session
+from enums import UserRole
 from models import Schedule, User
 
 
@@ -14,7 +15,7 @@ def get_schedules(
         is_even_week=even_week,
         day_of_week=weekday,
     )
-    if user.is_teacher:
+    if user.role == UserRole.TEACHER:
         query = query.filter(
             Schedule.teacher.ilike(f"%{user.teacher_name}%"),
         )

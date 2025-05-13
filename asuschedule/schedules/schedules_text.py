@@ -15,12 +15,12 @@ def _build_schedule_text(
     if not schedules:
         schedule_text += "🎉 Занятий нет."
     for schedule in schedules:
-        schedule_text += f"{schedule.to_text(user.is_teacher)}━━━━━━━━━━━━━━━━━━\n"
+        schedule_text += f"{schedule.to_text(user.role)}━━━━━━━━━━━━━━━━━━\n"
     return schedule_text
 
 
 def get_next_lesson_text(user: User, schedule: Schedule) -> str:
-    return f"<b>🔔 Следующая пара:</b>\n\n{schedule.to_text(user.is_teacher)}"
+    return f"<b>🔔 Следующая пара:</b>\n\n{schedule.to_text(user.role)}"
 
 
 def get_schedule_text(

@@ -5,6 +5,7 @@ from telegram.ext import ContextTypes
 
 from config import INVERT_WEEK_PARITY
 from database import session
+from enums import UserRole, UserStatus
 from models import User
 
 
@@ -26,7 +27,7 @@ def require_registration(func):
             update: Update, context: ContextTypes.DEFAULT_TYPE, *args, **kwargs,
     ):
         user = session.query(User).filter_by(id=update.effective_user.id).first()
-        if user is None or (not user.is_teacher and user.group_id is None):
+        if user is None or (not user.role == UserRole.TEACHER and user.group_id is None):
             await update.message.reply_text(
                 "Вы не зарегистрированы или не завершили настройку. "
                 "Пожалуйста, начните с команды /start.",
@@ -42,7 +43,7 @@ def require_staff(func):
             update: Update, context: ContextTypes.DEFAULT_TYPE, *args, **kwargs,
     ):
         user = session.query(User).filter_by(id=update.effective_user.id).first()
-        if user is None or not user.is_staff():
+        if user is None or not user.status == UserStatus.ADMIN:
             await update.message.reply_text(
                 "⛔ У вас нет доступа к этой команде.",
             )

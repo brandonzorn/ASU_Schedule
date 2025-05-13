@@ -1,7 +1,8 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Enum
 from sqlalchemy.orm import declarative_base, relationship
 
 from consts import LESSON_TIMES
+from enums import UserRole, UserStatus
 
 Base = declarative_base()
 
@@ -29,35 +30,32 @@ class User(Base):
     name = Column(String, nullable=False)
     subgroup = Column(Integer, nullable=True)  # Подгруппа (1 или 2)
     group_id = Column(Integer, ForeignKey("groups.id"))
-    is_teacher = Column(Boolean, default=False, nullable=True)
-    is_admin = Column(Boolean, default=False, nullable=True)
+    role = Column(Enum(UserRole), default=UserRole.STUDENT, nullable=False)
+    status = Column(Enum(UserStatus), default=UserStatus.USER, nullable=False)
     daily_notify = Column(Boolean, default=False, nullable=True)
     notify_time = Column(Integer, default=8, nullable=False)  # Время рассылки (8 или 20)
     teacher_name = Column(String, nullable=True)
 
     group = relationship("Group", back_populates="users")
 
-    def is_staff(self) -> bool:
-        return bool(self.is_admin)
-
     def make_teacher(self, teacher_name: str) -> None:
         self.subgroup = None
         self.group_id = None
 
-        self.is_teacher = True
+        self.role = UserRole.TEACHER
         self.teacher_name = teacher_name
 
     def make_student(self, group_id: int, subgroup: int) -> None:
-        self.is_teacher = False
+        self.role = UserRole.STUDENT
         self.teacher_name = None
 
         self.subgroup = subgroup
         self.group_id = group_id
 
     def _get_status_str(self) -> str:
-        if self.is_admin:
+        if self.status == UserStatus.ADMIN:
             return "Администратор"
-        if self.is_teacher:
+        if self.role == UserRole.TEACHER:
             return "Преподаватель"
         return "Пользователь"
 
@@ -66,7 +64,7 @@ class User(Base):
         notify_status = "Включена" if self.daily_notify else "Выключена"
         notify_time_str = f"{self.notify_time}:00" if self.daily_notify else "-"
 
-        if self.is_teacher:
+        if self.role == UserRole.TEACHER:
             return (
                 f"👤 Имя пользователя: {self.name}\n"
                 f"🧑‍🏫 Преподаватель: {self.teacher_name or 'Не указано'}\n"
@@ -107,14 +105,14 @@ class Schedule(Base):
 
     group = relationship("Group", back_populates="schedules")
 
-    def to_text(self, is_requesting_teacher: bool = False) -> str:
+    def to_text(self, requesting_role: UserRole) -> str:
         start_time, end_time = LESSON_TIMES.get(self.lesson_number, ("-", "-"))
         details = [
             f"Предмет: {self.subject or 'не указано'}",
             f"Формат: {self.lesson_type or 'не указано'}",
             f"Кабинет: {self.room or 'не указано'}",
         ]
-        if is_requesting_teacher:
+        if requesting_role == UserRole.TEACHER:
             details.append(
                 f"Группа: {self.group.get_short_name() if self.group else '??'}",
             )
