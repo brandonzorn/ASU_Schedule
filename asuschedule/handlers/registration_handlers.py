@@ -1,3 +1,4 @@
+from sqlalchemy import select
 from telegram import (
     InlineKeyboardButton,
     InlineKeyboardMarkup,
@@ -28,10 +29,13 @@ from utils import get_main_keyboard
 
 async def start_registration(update: Update, _) -> int:
     faculties = [
-        faculty[:32] for (faculty,) in session.query(
-            Group.faculty,
-        ).distinct().all()
+        faculty[:32] for faculty in session.execute(
+            select(
+                Group.faculty,
+            ).distinct(),
+        ).scalars().all()
     ]
+
     keyboard = [
         [
             InlineKeyboardButton(
@@ -51,13 +55,14 @@ async def select_faculty(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     await query.answer()
     context.user_data["faculty"] = query.data.split("_")[-1]
 
-    courses = [
-        course for (course,) in session.query(
+    courses = session.execute(
+        select(
             Group.course,
         ).order_by(
             Group.course,
-        ).distinct().all()
-    ]
+        ).distinct(),
+    ).scalars().all()
+
     keyboard = [
         [
             InlineKeyboardButton(
@@ -78,14 +83,16 @@ async def select_course(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
     await query.answer()
     context.user_data["course"] = query.data.split("_")[-1]
 
-    specialities = [
-        speciality for (speciality,) in session.query(
+    specialities = session.execute(
+        select(
             Group.speciality,
-        ).filter(
-            Group.course == context.user_data["course"],
+        ).filter_by(
+            course=context.user_data["course"],
+        ).where(
             Group.faculty.ilike(f"%{context.user_data['faculty']}%"),
-        ).distinct().all()
-    ]
+        ).distinct(),
+    ).scalars().all()
+
     keyboard = [
         [
             InlineKeyboardButton(
@@ -104,14 +111,14 @@ async def select_teacher(update: Update, _) -> int:
     query = update.callback_query
     await query.answer()
 
-    teachers = [
-        teacher for (teacher,) in session.query(
+    teachers = session.execute(
+        select(
             Schedule.teacher,
-        ).filter(
+        ).where(
             Schedule.teacher.isnot(None),
             ~Schedule.teacher.contains("/"),
-        ).distinct().order_by(Schedule.teacher).all()
-    ]
+        ).distinct().order_by(Schedule.teacher),
+    ).scalars().all()
 
     keyboard = [
         [
@@ -163,12 +170,17 @@ async def select_subgroup(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     faculty = context.user_data["faculty"]
     speciality = context.user_data["speciality"]
 
-    group = session.query(Group).filter(
-        Group.course == course,
-        Group.faculty.ilike(f"%{faculty}%"),
-        Group.speciality.ilike(f"%{speciality}%"),
-    ).first()
-    user = session.query(User).filter_by(id=user_id).first()
+    group = session.execute(
+        select(
+            Group,
+        ).filter_by(
+            course=course,
+        ).where(
+            Group.faculty.ilike(f"%{faculty}%"),
+            Group.speciality.ilike(f"%{speciality}%"),
+        ),
+    ).scalar_one_or_none()
+    user = session.get(User, user_id)
     if not user:
         new_user = User(
             id=user_id,
@@ -206,7 +218,7 @@ async def finalize_registration(
     username = query.from_user.username
     teacher_name = query.data.split("_")[-1]
 
-    user = session.query(User).filter_by(id=user_id).first()
+    user = session.get(User, user_id)
     if not user:
         new_user = User(
             id=user_id,

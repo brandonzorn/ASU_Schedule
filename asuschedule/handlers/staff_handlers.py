@@ -3,6 +3,7 @@ import json
 import logging
 import traceback
 
+from sqlalchemy import delete, select, update as sql_update
 from telegram import Update
 from telegram.constants import ParseMode
 from telegram.ext import CommandHandler, ContextTypes
@@ -18,7 +19,9 @@ logger = logging.getLogger(__name__)
 
 @require_staff
 async def users_list(update: Update, _):
-    users = session.query(User).order_by(User.role).all()
+    users = session.execute(
+        select(User).order_by(User.role),
+    ).scalars().all()
     chunk_size = 15
     user_chunks = [users[i:i + chunk_size] for i in range(0, len(users), chunk_size)]
 
@@ -32,7 +35,7 @@ async def users_list(update: Update, _):
 
 @require_staff
 async def users_stats(update: Update, _):
-    users = session.query(User).all()
+    users = session.execute(select(User)).scalars().all()
     await update.message.reply_text(
         f"📊 <b>Статистика пользователей:</b>\n\n"
         f"▪️ Всего пользователей: {len(users)}\n"
@@ -46,7 +49,7 @@ async def users_stats(update: Update, _):
 async def message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if context.args:
         msg = " ".join(context.args)
-        users = session.query(User).all()
+        users = session.execute(select(User)).scalars().all()
         for user in users:
             await context.bot.send_message(chat_id=user.id, text=msg)
         await update.message.reply_text("✅ Сообщение отправлено.")
@@ -63,7 +66,9 @@ async def turn_off_daily_notify(update: Update, context: ContextTypes.DEFAULT_TY
             "❗ Требуется подтверждение операции (укажите 'confirm' после команды).",
         )
         return
-    session.query(User).update({User.daily_notify: False})
+    session.execute(
+        sql_update(User).values(daily_notify=False),
+    )
     session.commit()
     await update.message.reply_text(
         "🌙 Ежедневные уведомления отключены для всех пользователей.",
@@ -77,7 +82,7 @@ async def delete_all_schedules(update: Update, context: ContextTypes.DEFAULT_TYP
             "❗ Требуется подтверждение операции (укажите 'confirm' после команды).",
         )
         return
-    session.query(Schedule).delete()
+    session.execute(delete(Schedule))
     session.commit()
     await update.message.reply_text(
         "🗑️ Все расписания успешно удалены.",
@@ -107,7 +112,9 @@ async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> N
         f"<pre>{html.escape(tb_string)}</pre>"
     )
 
-    admin_user = session.query(User).filter_by(status=UserStatus.ADMIN).first()
+    admin_user = session.execute(
+        select(User).filter_by(status=UserStatus.ADMIN),
+    ).scalar_one_or_none()
     if admin_user:
         await context.bot.send_message(
             chat_id=admin_user.id,

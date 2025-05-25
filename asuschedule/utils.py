@@ -26,7 +26,7 @@ def require_registration(func):
     async def wrapper(
             update: Update, context: ContextTypes.DEFAULT_TYPE, *args, **kwargs,
     ):
-        user = session.query(User).filter_by(id=update.effective_user.id).first()
+        user = session.get(User, update.effective_user.id)
         if user is None or (not user.role == UserRole.TEACHER and user.group_id is None):
             await update.message.reply_text(
                 "Вы не зарегистрированы или не завершили настройку. "
@@ -42,7 +42,7 @@ def require_staff(func):
     async def wrapper(
             update: Update, context: ContextTypes.DEFAULT_TYPE, *args, **kwargs,
     ):
-        user = session.query(User).filter_by(id=update.effective_user.id).first()
+        user = session.get(User, update.effective_user.id)
         if user is None or not user.status == UserStatus.ADMIN:
             await update.message.reply_text(
                 "⛔ У вас нет доступа к этой команде.",

@@ -38,7 +38,7 @@ async def select_notify_time(update: Update, _):
     await query.answer()
     user_choice = query.data.split("_")[-1]
 
-    user = session.query(User).filter_by(id=query.from_user.id).first()
+    user = session.get(User, query.from_user.id)
     if user:
         if user_choice == "disable":
             await query.edit_message_text(

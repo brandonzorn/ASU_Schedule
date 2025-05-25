@@ -1,4 +1,4 @@
-from sqlalchemy import or_
+from sqlalchemy import or_, select
 
 from database import session
 from enums import UserRole
@@ -11,24 +11,25 @@ def get_schedules(
         even_week: bool,
         lesson_number: int = None,
 ) -> list[Schedule]:
-    query = session.query(Schedule).filter_by(
+    stmt = select(Schedule).filter_by(
         is_even_week=even_week,
         day_of_week=weekday,
     )
     if user.role == UserRole.TEACHER:
-        query = query.filter(
+        stmt = stmt.where(
             Schedule.teacher.ilike(f"%{user.teacher_name}%"),
         )
     else:
-        query = query.filter_by(group_id=user.group_id).filter(
+        stmt = stmt.filter_by(group_id=user.group_id).where(
             or_(
                 Schedule.subgroup.is_(None),
                 Schedule.subgroup == user.subgroup,
             ),
         )
     if lesson_number is not None:
-        query = query.filter(Schedule.lesson_number == lesson_number)
-    return query.order_by(Schedule.lesson_number).all()
+        stmt = stmt.filter_by(lesson_number=lesson_number)
+    stmt = stmt.order_by(Schedule.lesson_number)
+    return session.execute(stmt).scalars().all()
 
 
 __all__ = [

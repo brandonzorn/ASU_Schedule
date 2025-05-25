@@ -49,7 +49,7 @@ async def select_day(update: Update, _) -> int | None:
     await query.answer()
     user_choice = query.data.split("_")
 
-    user = session.query(User).filter_by(id=update.effective_user.id).first()
+    user = session.get(User, update.effective_user.id)
 
     day, is_even_week = (int(user_choice[-2]), bool(int(user_choice[-1])))
 
