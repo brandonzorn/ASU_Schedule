@@ -56,7 +56,15 @@ async def handle_file(update: Update, _):
             lesson_number = int(val[4])
             subject = val[5]
             teacher = val[6] if isinstance(val[6], str) else None
-            room = str(val[7]) if isinstance(val[7], (str, int)) else None
+
+            room = val[7]
+            if isinstance(room, (str, int)):
+                room = str(room)
+            elif isinstance(room, float):
+                room = str(int(room))
+            else:
+                room = None
+
             lesson_type = val[8] if isinstance(val[8], str) else None
             is_even_week = bool(int(val[9]))
             faculty = val[10]
