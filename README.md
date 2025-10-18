@@ -17,7 +17,7 @@
 
 ## 🛠 Стек технологий
 
-- Python 3.12+
+- Python 3.11+
 - [python-telegram-bot v21+](https://github.com/python-telegram-bot/python-telegram-bot)
 - SQLAlchemy для работы с базой данных
 - SQLite (или другая СУБД по желанию)
