@@ -9,5 +9,56 @@ exclude = [
 ]
 ignore = ["E203", "W503"]
 
-[tool.black]
+[tool.ruff]
 line-length = 89
+target-version = "py312"
+
+[tool.ruff.format]
+indent-style = "space"
+quote-style = "double"
+
+[tool.ruff.lint]
+select = [
+    "A",
+    "ANN",
+    "ARG",
+    "COM",
+    "E",
+    "EM",
+    "ERA",
+    "F",
+    "FIX",
+    "I",
+    "ISC",
+    "N",
+    "PTH",
+    "RET",
+    "RSE",
+    "Q",
+    "T20",
+    "UP",
+    "W",
+]
+
+[tool.ruff.lint.isort]
+force-sort-within-sections = true
+order-by-type = false
+known-first-party = [
+    "consts",
+    "config",
+    "database",
+    "enums",
+    "models",
+    "schedules",
+    "handlers",
+    "utils",
+]
+
+[tool.ruff.lint.flake8-quotes]
+docstring-quotes = "double"
+inline-quotes = "double"
+multiline-quotes = "double"
+
+[tool.ruff.lint.flake8-annotations]
+allow-star-arg-any = true
+suppress-dummy-args = true

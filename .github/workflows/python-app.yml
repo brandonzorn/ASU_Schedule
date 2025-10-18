@@ -20,9 +20,21 @@ jobs:
     - name: Check code formatting with flake8
       run: flake8 ./asuschedule/
 
+  ruff-lint:
+    runs-on: ubuntu-latest
+    container: python:3.13-alpine
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install dependencies
+        run: pip install ruff
+      - name: Run Ruff check
+        run: ruff check ./asuschedule/
+      - name: Run Ruff format
+        run: ruff format --diff ./asuschedule/
+
   prod-deploy:
     if: github.ref == 'refs/heads/master'
-    needs: [ flake8-test ]
+    needs: [ flake8-test, ruff-lint ]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
