@@ -1,7 +1,6 @@
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from datetime import datetime
 from functools import wraps
-from typing import Any
 
 from telegram import ReplyKeyboardMarkup, Update
 from telegram.ext import ContextTypes
@@ -24,14 +23,14 @@ def get_main_keyboard() -> ReplyKeyboardMarkup:
     )
 
 
-def require_registration(func: Callable):
+def require_registration(
+    func: Callable[[Update, ContextTypes.DEFAULT_TYPE], Awaitable],
+) -> Callable:
     @wraps(func)
     async def wrapper(
         update: Update,
         context: ContextTypes.DEFAULT_TYPE,
-        *args: Any,
-        **kwargs: Any,
-    ):
+    ) -> None:
         user = session.get(User, update.effective_user.id)
         if user is None or (not user.role == UserRole.TEACHER and user.group_id is None):
             await update.message.reply_text(
@@ -39,26 +38,26 @@ def require_registration(func: Callable):
                 "Пожалуйста, начните с команды /start.",
             )
             return None
-        return await func(update, context, *args, **kwargs)
+        return await func(update, context)
 
     return wrapper
 
 
-def require_staff(func: Callable):
+def require_staff(
+    func: Callable[[Update, ContextTypes.DEFAULT_TYPE], Awaitable],
+) -> Callable:
     @wraps(func)
     async def wrapper(
         update: Update,
         context: ContextTypes.DEFAULT_TYPE,
-        *args: Any,
-        **kwargs: Any,
-    ):
+    ) -> None:
         user = session.get(User, update.effective_user.id)
         if user is None or not user.status == UserStatus.ADMIN:
             await update.message.reply_text(
                 "⛔ У вас нет доступа к этой команде.",
             )
             return None
-        return await func(update, context, *args, **kwargs)
+        return await func(update, context)
 
     return wrapper
 
