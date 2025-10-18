@@ -21,9 +21,24 @@ SELECT_NOTIFY_TIME = 5
 @require_registration
 async def start_notify_time(update: Update, _) -> int:
     keyboard = [
-        [InlineKeyboardButton("8:00 (Утром)", callback_data="notifyTime_8")],
-        [InlineKeyboardButton("20:00 (Вечером)", callback_data="notifyTime_20")],
-        [InlineKeyboardButton("Выключить", callback_data="notifyTime_disable")],
+        [
+            InlineKeyboardButton(
+                "8:00 (Утром)",
+                callback_data="notifyTime_8",
+            ),
+        ],
+        [
+            InlineKeyboardButton(
+                "20:00 (Вечером)",
+                callback_data="notifyTime_20",
+            ),
+        ],
+        [
+            InlineKeyboardButton(
+                "Выключить",
+                callback_data="notifyTime_disable",
+            ),
+        ],
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     await update.message.reply_text(

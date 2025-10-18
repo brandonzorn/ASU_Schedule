@@ -32,7 +32,9 @@ def require_registration(
         context: ContextTypes.DEFAULT_TYPE,
     ) -> None:
         user = session.get(User, update.effective_user.id)
-        if user is None or (not user.role == UserRole.TEACHER and user.group_id is None):
+        if user is None or (
+            not user.role == UserRole.TEACHER and user.group_id is None
+        ):
             await update.message.reply_text(
                 "Вы не зарегистрированы или не завершили настройку. "
                 "Пожалуйста, начните с команды /start.",

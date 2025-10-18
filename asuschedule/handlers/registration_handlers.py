@@ -48,14 +48,22 @@ async def start_registration(update: Update, _) -> int:
         ]
         for faculty in faculties
     ]
-    keyboard.append([InlineKeyboardButton("Отмена", callback_data="reg_cancel")])
+    keyboard.append(
+        [InlineKeyboardButton("Отмена", callback_data="reg_cancel")],
+    )
     reply_markup = InlineKeyboardMarkup(keyboard)
 
-    await update.message.reply_text("Выберите факультет:", reply_markup=reply_markup)
+    await update.message.reply_text(
+        "Выберите факультет:",
+        reply_markup=reply_markup,
+    )
     return SELECT_FACULTY
 
 
-async def select_faculty(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+async def select_faculty(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE,
+) -> int:
     query = update.callback_query
     await query.answer()
     context.user_data["faculty"] = query.data.split("_")[-1]
@@ -91,7 +99,10 @@ async def select_faculty(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     return SELECT_COURSE
 
 
-async def select_course(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+async def select_course(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE,
+) -> int:
     query = update.callback_query
     await query.answer()
     context.user_data["course"] = query.data.split("_")[-1]
@@ -122,10 +133,15 @@ async def select_course(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
         ]
         for speciality in specialities
     ]
-    keyboard.append([InlineKeyboardButton("Отмена", callback_data="reg_cancel")])
+    keyboard.append(
+        [InlineKeyboardButton("Отмена", callback_data="reg_cancel")],
+    )
     reply_markup = InlineKeyboardMarkup(keyboard)
 
-    await query.edit_message_text("Выберите специальность:", reply_markup=reply_markup)
+    await query.edit_message_text(
+        "Выберите специальность:",
+        reply_markup=reply_markup,
+    )
     return SELECT_SPECIALITY
 
 
@@ -165,11 +181,17 @@ async def select_teacher(update: Update, _) -> int:
     )
     reply_markup = InlineKeyboardMarkup(keyboard)
 
-    await query.edit_message_text("Выберите преподавателя:", reply_markup=reply_markup)
+    await query.edit_message_text(
+        "Выберите преподавателя:",
+        reply_markup=reply_markup,
+    )
     return SELECT_TEACHER
 
 
-async def select_speciality(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+async def select_speciality(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE,
+) -> int:
     query = update.callback_query
     await query.answer()
     context.user_data["speciality"] = query.data.split("_")[-1]
@@ -190,7 +212,10 @@ async def select_speciality(update: Update, context: ContextTypes.DEFAULT_TYPE) 
     return SELECT_SUBGROUP
 
 
-async def select_subgroup(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+async def select_subgroup(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE,
+) -> int:
     query = update.callback_query
     await query.answer()
 
@@ -310,7 +335,10 @@ registration_handler = ConversationHandler(
             CallbackQueryHandler(select_subgroup, pattern=r"^regSubgroup_"),
         ],
         SELECT_TEACHER: [
-            CallbackQueryHandler(finalize_registration, pattern=r"^regTeacher_"),
+            CallbackQueryHandler(
+                finalize_registration,
+                pattern=r"^regTeacher_",
+            ),
         ],
     },
     fallbacks=[

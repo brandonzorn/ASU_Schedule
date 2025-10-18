@@ -41,7 +41,9 @@ logging.basicConfig(
     level=logging.INFO,
     handlers=[
         logging.FileHandler(
-            datetime.datetime.now(tz=TIMEZONE).strftime("logs/%Y-%m-%d_%H-%M-%S.log"),
+            datetime.datetime.now(tz=TIMEZONE).strftime(
+                "logs/%Y-%m-%d_%H-%M-%S.log",
+            ),
             encoding="utf-8",
         ),
         logging.StreamHandler(),
@@ -183,7 +185,9 @@ def main() -> None:
 
     application.add_handler(CommandHandler("info", info_handler))
     application.add_handler(CommandHandler("schedule", schedule_handler))
-    application.add_handler(CommandHandler("schedule_next", next_day_schedule_handler))
+    application.add_handler(
+        CommandHandler("schedule_next", next_day_schedule_handler),
+    )
 
     application.add_handler(
         MessageHandler(

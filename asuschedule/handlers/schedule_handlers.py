@@ -55,9 +55,17 @@ async def select_day(update: Update, _) -> int | None:
     day, is_even_week = (int(user_choice[-2]), bool(int(user_choice[-1])))
 
     schedules = get_schedules(user, day, is_even_week)
-    schedules_text = get_schedule_text_by_day(user, schedules, day, is_even_week)
+    schedules_text = get_schedule_text_by_day(
+        user,
+        schedules,
+        day,
+        is_even_week,
+    )
 
-    await query.edit_message_text(text=schedules_text, parse_mode=ParseMode.HTML)
+    await query.edit_message_text(
+        text=schedules_text,
+        parse_mode=ParseMode.HTML,
+    )
     return ConversationHandler.END
 
 
@@ -75,7 +83,9 @@ schedule_table_handler = ConversationHandler(
         ),
     ],
     states={
-        SELECT_DAY: [CallbackQueryHandler(select_day, pattern="^scheduleDay_")],
+        SELECT_DAY: [
+            CallbackQueryHandler(select_day, pattern="^scheduleDay_"),
+        ],
     },
     fallbacks=[
         CommandHandler("cancel", cancel),

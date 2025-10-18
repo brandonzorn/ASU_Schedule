@@ -27,7 +27,9 @@ async def users_list(update: Update, _) -> None:
         .all()
     )
     chunk_size = 15
-    user_chunks = [users[i : i + chunk_size] for i in range(0, len(users), chunk_size)]
+    user_chunks = [
+        users[i : i + chunk_size] for i in range(0, len(users), chunk_size)
+    ]
 
     for chunk in user_chunks:
         await update.message.reply_text(
@@ -40,11 +42,15 @@ async def users_list(update: Update, _) -> None:
 @require_staff
 async def users_stats(update: Update, _) -> None:
     users = session.execute(select(User)).scalars().all()
+
+    teachers_count = len([i for i in users if i.role == UserRole.TEACHER])
+    notify_enabled_count = len([i for i in users if i.daily_notify])
+
     await update.message.reply_text(
         f"📊 <b>Статистика пользователей:</b>\n\n"
         f"▪️ Всего пользователей: {len(users)}\n"
-        f"▪️ Преподавателей: {len([i for i in users if i.role == UserRole.TEACHER])}\n"
-        f"▪️ Включена ежедневная рассылка: {len([i for i in users if i.daily_notify])}",
+        f"▪️ Преподавателей: {teachers_count}\n"
+        f"▪️ Включена ежедневная рассылка: {notify_enabled_count}",
         parse_mode=ParseMode.HTML,
     )
 
@@ -70,7 +76,8 @@ async def turn_off_daily_notify(
 ) -> None:
     if "confirm" not in context.args:
         await update.message.reply_text(
-            "❗ Требуется подтверждение операции (укажите 'confirm' после команды).",
+            "❗ Требуется подтверждение операции "
+            "(укажите 'confirm' после команды).",
         )
         return
     session.execute(
@@ -89,7 +96,8 @@ async def delete_all_schedules(
 ) -> None:
     if "confirm" not in context.args:
         await update.message.reply_text(
-            "❗ Требуется подтверждение операции (укажите 'confirm' после команды).",
+            "❗ Требуется подтверждение операции "
+            "(укажите 'confirm' после команды).",
         )
         return
     session.execute(delete(Schedule))
@@ -99,7 +107,10 @@ async def delete_all_schedules(
     )
 
 
-async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def error_handler(
+    update: object,
+    context: ContextTypes.DEFAULT_TYPE,
+) -> None:
     logger.error(
         "Exception while handling an update:",
         exc_info=context.error,
@@ -117,12 +128,14 @@ async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> N
             ensure_ascii=False,
         ),
     )
+    chat_data_html = html.escape(str(context.chat_data))
+    user_data_html = html.escape(str(context.user_data))
 
     err_message = (
         "An exception was raised while handling an update\n"
         f"<pre>update = {update_str_html}</pre>\n\n"
-        f"<pre>context.chat_data = {html.escape(str(context.chat_data))}</pre>\n\n"
-        f"<pre>context.user_data = {html.escape(str(context.user_data))}</pre>\n\n"
+        f"<pre>context.chat_data = {chat_data_html}</pre>\n\n"
+        f"<pre>context.user_data = {user_data_html}</pre>\n\n"
         f"<pre>{html.escape(tb_string)}</pre>"
     )
 

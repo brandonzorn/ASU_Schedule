@@ -28,12 +28,14 @@ class User(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     username = Column(String, nullable=True)
     name = Column(String, nullable=False)
-    subgroup = Column(Integer, nullable=True)  # Подгруппа (1 или 2)
+    # Подгруппа (1 или 2)
+    subgroup = Column(Integer, nullable=True)
     group_id = Column(Integer, ForeignKey("groups.id"))
     role = Column(Enum(UserRole), default=UserRole.STUDENT, nullable=False)
     status = Column(Enum(UserStatus), default=UserStatus.USER, nullable=False)
     daily_notify = Column(Boolean, default=False, nullable=True)
-    notify_time = Column(Integer, default=8, nullable=False)  # Время рассылки (8 или 20)
+    # Время рассылки (8 или 20)
+    notify_time = Column(Integer, default=8, nullable=False)
     teacher_name = Column(String, nullable=True)
 
     group = relationship("Group", back_populates="users")
@@ -62,7 +64,9 @@ class User(Base):
     def to_text(self) -> str:
         status = self._get_status_str()
         notify_status = "Включена" if self.daily_notify else "Выключена"
-        notify_time_str = f"{self.notify_time}:00" if self.daily_notify else "-"
+        notify_time_str = (
+            f"{self.notify_time}:00" if self.daily_notify else "-"
+        )
 
         if self.role == UserRole.TEACHER:
             return (
@@ -111,21 +115,31 @@ class Schedule(Base):
         ]
         if requesting_role == UserRole.TEACHER:
             details.append(
-                f"Группа: {self.group.get_short_name() if self.group else '??'}",
+                f"Группа: "
+                f"{self.group.get_short_name() if self.group else '??'}",
             )
         else:
             details.append(
                 f"Преподаватель: {self.teacher or 'не указано'}",
             )
 
+        details_text = "\n├".join(details)
         return (
             f"🕒 {self.lesson_number} пара ({start_time} - {end_time})\n"
-            f"├{'\n├'.join(details)}\n"
+            f"├{details_text}\n"
         )
 
 
-Group.users = relationship("User", order_by=User.id, back_populates="group")
-Group.schedules = relationship("Schedule", order_by=Schedule.id, back_populates="group")
+Group.users = relationship(
+    "User",
+    order_by=User.id,
+    back_populates="group",
+)
+Group.schedules = relationship(
+    "Schedule",
+    order_by=Schedule.id,
+    back_populates="group",
+)
 
 
 __all__ = [

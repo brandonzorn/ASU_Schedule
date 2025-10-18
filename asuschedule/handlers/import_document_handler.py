@@ -51,7 +51,9 @@ async def handle_file(update: Update, _) -> None:
         for val in combined_df.values:
             course = val[0]
             speciality = val[1]
-            subgroup = int(val[2]) if isinstance(val[2], (float, int)) else None
+            subgroup = (
+                int(val[2]) if isinstance(val[2], (float, int)) else None
+            )
             day_of_week = str(val[3])
             lesson_number = int(val[4])
             subject = val[5]
