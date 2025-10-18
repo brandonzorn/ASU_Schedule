@@ -3,16 +3,16 @@ import json
 import logging
 import traceback
 
-from sqlalchemy import delete, select, update as sql_update
+from sqlalchemy import delete, select
+from sqlalchemy import update as sql_update
 from telegram import Update
 from telegram.constants import ParseMode
 from telegram.ext import CommandHandler, ContextTypes
 
 from database import session
-from enums import UserStatus, UserRole
+from enums import UserRole, UserStatus
 from models import Schedule, User
 from utils import require_staff
-
 
 logger = logging.getLogger(__name__)
 

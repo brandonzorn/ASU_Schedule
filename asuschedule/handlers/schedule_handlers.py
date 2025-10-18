@@ -8,8 +8,8 @@ from telegram.ext import (
     CallbackQueryHandler,
     CommandHandler,
     ConversationHandler,
-    MessageHandler,
     filters,
+    MessageHandler,
 )
 
 from consts import DAY_NAMES, WEEK_NAMES

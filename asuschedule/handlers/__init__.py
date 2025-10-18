@@ -4,11 +4,11 @@ from .registration_handlers import registration_handler
 from .schedule_handlers import schedule_table_handler
 from .staff_handlers import (
     delete_all_schedules_handler,
+    error_handler,
     message_handler,
     turn_off_daily_notify_handler,
     users_list_handler,
     users_stats_handler,
-    error_handler,
 )
 
 __all__ = [

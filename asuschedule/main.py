@@ -17,10 +17,11 @@ from config import BOT_TOKEN
 from consts import LESSON_TIMES, TIMEZONE
 from database import session
 from handlers import (
-    notify_time_handler,
     delete_all_schedules_handler,
+    error_handler,
     handle_file,
     message_handler,
+    notify_time_handler,
     registration_handler,
     schedule_table_handler,
     turn_off_daily_notify_handler,
@@ -29,9 +30,8 @@ from handlers import (
     error_handler,
 )
 from models import User
-
-from schedules.schedules_text import get_next_lesson_text, get_schedule_text
 from schedules.schedules import get_schedules
+from schedules.schedules_text import get_next_lesson_text, get_schedule_text
 from utils import get_main_keyboard, is_even_week, require_registration
 
 __all__ = []

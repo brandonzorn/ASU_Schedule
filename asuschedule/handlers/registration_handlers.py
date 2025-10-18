@@ -2,8 +2,8 @@ from sqlalchemy import select
 from telegram import (
     InlineKeyboardButton,
     InlineKeyboardMarkup,
-    Update,
     Message,
+    Update,
 )
 from telegram.ext import (
     CallbackQueryHandler,

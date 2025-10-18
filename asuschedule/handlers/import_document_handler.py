@@ -1,8 +1,8 @@
-import logging
 from io import BytesIO
+import logging
 
 import pandas as pd
-from sqlalchemy import select, delete
+from sqlalchemy import delete, select
 from telegram import Update
 
 from consts import WEEK_NAMES
