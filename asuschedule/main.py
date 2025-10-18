@@ -91,7 +91,7 @@ async def next_day_schedule_handler(update: Update, _) -> None:
     )
 
 
-async def next_lesson_handler(context: ContextTypes.DEFAULT_TYPE):
+async def next_lesson_handler(context: ContextTypes.DEFAULT_TYPE) -> None:
     lesson_num = context.job.data["lesson_num"]
     date = datetime.datetime.now(tz=TIMEZONE)
 

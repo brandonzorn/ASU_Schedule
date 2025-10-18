@@ -60,7 +60,7 @@ async def select_day(update: Update, _) -> int | None:
     return ConversationHandler.END
 
 
-async def cancel(_update, _context):
+async def cancel(_update, _context) -> int:
     return ConversationHandler.END
 
 

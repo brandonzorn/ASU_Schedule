@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 @require_staff
-async def users_list(update: Update, _):
+async def users_list(update: Update, _) -> None:
     users = session.execute(
         select(User).order_by(User.role),
     ).scalars().all()
@@ -34,7 +34,7 @@ async def users_list(update: Update, _):
 
 
 @require_staff
-async def users_stats(update: Update, _):
+async def users_stats(update: Update, _) -> None:
     users = session.execute(select(User)).scalars().all()
     await update.message.reply_text(
         f"📊 <b>Статистика пользователей:</b>\n\n"
@@ -46,7 +46,7 @@ async def users_stats(update: Update, _):
 
 
 @require_staff
-async def message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if context.args:
         msg = " ".join(context.args)
         users = session.execute(select(User)).scalars().all()
@@ -60,7 +60,10 @@ async def message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 @require_staff
-async def turn_off_daily_notify(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def turn_off_daily_notify(
+        update: Update,
+        context: ContextTypes.DEFAULT_TYPE,
+) -> None:
     if "confirm" not in context.args:
         await update.message.reply_text(
             "❗ Требуется подтверждение операции (укажите 'confirm' после команды).",
@@ -76,7 +79,10 @@ async def turn_off_daily_notify(update: Update, context: ContextTypes.DEFAULT_TY
 
 
 @require_staff
-async def delete_all_schedules(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def delete_all_schedules(
+        update: Update,
+        context: ContextTypes.DEFAULT_TYPE,
+) -> None:
     if "confirm" not in context.args:
         await update.message.reply_text(
             "❗ Требуется подтверждение операции (укажите 'confirm' после команды).",

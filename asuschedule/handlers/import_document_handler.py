@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 
 @require_staff
-async def handle_file(update: Update, _):
+async def handle_file(update: Update, _) -> None:
     document = update.message.document
 
     if not document.file_name.endswith(".xlsx"):

@@ -1,4 +1,7 @@
+from collections.abc import Callable
+from datetime import datetime
 from functools import wraps
+from typing import Any
 
 from telegram import ReplyKeyboardMarkup, Update
 from telegram.ext import ContextTypes
@@ -9,7 +12,7 @@ from enums import UserRole, UserStatus
 from models import User
 
 
-def get_main_keyboard():
+def get_main_keyboard() -> ReplyKeyboardMarkup:
     return ReplyKeyboardMarkup(
         [
             ["Расписание на сегодня", "Расписание на завтра"],
@@ -21,10 +24,13 @@ def get_main_keyboard():
     )
 
 
-def require_registration(func):
+def require_registration(func: Callable):
     @wraps(func)
     async def wrapper(
-            update: Update, context: ContextTypes.DEFAULT_TYPE, *args, **kwargs,
+            update: Update,
+            context: ContextTypes.DEFAULT_TYPE,
+            *args: Any,
+            **kwargs: Any,
     ):
         user = session.get(User, update.effective_user.id)
         if user is None or (not user.role == UserRole.TEACHER and user.group_id is None):
@@ -37,10 +43,13 @@ def require_registration(func):
     return wrapper
 
 
-def require_staff(func):
+def require_staff(func: Callable):
     @wraps(func)
     async def wrapper(
-            update: Update, context: ContextTypes.DEFAULT_TYPE, *args, **kwargs,
+            update: Update,
+            context: ContextTypes.DEFAULT_TYPE,
+            *args: Any,
+            **kwargs: Any,
     ):
         user = session.get(User, update.effective_user.id)
         if user is None or not user.status == UserStatus.ADMIN:
@@ -52,7 +61,7 @@ def require_staff(func):
     return wrapper
 
 
-def is_even_week(date) -> bool:
+def is_even_week(date: datetime) -> bool:
     week_number = date.isocalendar()[1]
     if INVERT_WEEK_PARITY:
         return not week_number % 2 == 0

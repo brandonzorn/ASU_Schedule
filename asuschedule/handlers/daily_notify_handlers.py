@@ -33,7 +33,7 @@ async def start_notify_time(update: Update, _) -> int:
     return SELECT_NOTIFY_TIME
 
 
-async def select_notify_time(update: Update, _):
+async def select_notify_time(update: Update, _) -> int:
     query = update.callback_query
     await query.answer()
     user_choice = query.data.split("_")[-1]
@@ -56,7 +56,7 @@ async def select_notify_time(update: Update, _):
     return ConversationHandler.END
 
 
-async def cancel(update: Update, _):
+async def cancel(update: Update, _) -> int:
     await update.message.reply_text("Настройка рассылки отменена.")
     return ConversationHandler.END
 
