@@ -27,10 +27,10 @@ def get_main_keyboard() -> ReplyKeyboardMarkup:
 def require_registration(func: Callable):
     @wraps(func)
     async def wrapper(
-            update: Update,
-            context: ContextTypes.DEFAULT_TYPE,
-            *args: Any,
-            **kwargs: Any,
+        update: Update,
+        context: ContextTypes.DEFAULT_TYPE,
+        *args: Any,
+        **kwargs: Any,
     ):
         user = session.get(User, update.effective_user.id)
         if user is None or (not user.role == UserRole.TEACHER and user.group_id is None):
@@ -40,16 +40,17 @@ def require_registration(func: Callable):
             )
             return None
         return await func(update, context, *args, **kwargs)
+
     return wrapper
 
 
 def require_staff(func: Callable):
     @wraps(func)
     async def wrapper(
-            update: Update,
-            context: ContextTypes.DEFAULT_TYPE,
-            *args: Any,
-            **kwargs: Any,
+        update: Update,
+        context: ContextTypes.DEFAULT_TYPE,
+        *args: Any,
+        **kwargs: Any,
     ):
         user = session.get(User, update.effective_user.id)
         if user is None or not user.status == UserStatus.ADMIN:
@@ -58,6 +59,7 @@ def require_staff(func: Callable):
             )
             return None
         return await func(update, context, *args, **kwargs)
+
     return wrapper
 
 

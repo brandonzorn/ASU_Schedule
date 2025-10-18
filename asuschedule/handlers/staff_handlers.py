@@ -19,11 +19,15 @@ logger = logging.getLogger(__name__)
 
 @require_staff
 async def users_list(update: Update, _) -> None:
-    users = session.execute(
-        select(User).order_by(User.role),
-    ).scalars().all()
+    users = (
+        session.execute(
+            select(User).order_by(User.role),
+        )
+        .scalars()
+        .all()
+    )
     chunk_size = 15
-    user_chunks = [users[i:i + chunk_size] for i in range(0, len(users), chunk_size)]
+    user_chunks = [users[i : i + chunk_size] for i in range(0, len(users), chunk_size)]
 
     for chunk in user_chunks:
         await update.message.reply_text(
@@ -61,8 +65,8 @@ async def message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 @require_staff
 async def turn_off_daily_notify(
-        update: Update,
-        context: ContextTypes.DEFAULT_TYPE,
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE,
 ) -> None:
     if "confirm" not in context.args:
         await update.message.reply_text(
@@ -80,8 +84,8 @@ async def turn_off_daily_notify(
 
 @require_staff
 async def delete_all_schedules(
-        update: Update,
-        context: ContextTypes.DEFAULT_TYPE,
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE,
 ) -> None:
     if "confirm" not in context.args:
         await update.message.reply_text(
@@ -106,13 +110,17 @@ async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> N
         context.error.__traceback__,
     )
     tb_string = "".join(tb_list)
-    update_str = update.to_dict() if isinstance(update, Update) else str(update)
+    update_str_html = html.escape(
+        json.dumps(
+            update.to_dict() if isinstance(update, Update) else str(update),
+            indent=2,
+            ensure_ascii=False,
+        ),
+    )
+
     err_message = (
         "An exception was raised while handling an update\n"
-        f"<pre>update = {html.escape(
-            json.dumps(update_str, indent=2, ensure_ascii=False),
-        )}"
-        "</pre>\n\n"
+        f"<pre>update = {update_str_html}</pre>\n\n"
         f"<pre>context.chat_data = {html.escape(str(context.chat_data))}</pre>\n\n"
         f"<pre>context.user_data = {html.escape(str(context.user_data))}</pre>\n\n"
         f"<pre>{html.escape(tb_string)}</pre>"

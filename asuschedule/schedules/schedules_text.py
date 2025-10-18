@@ -6,10 +6,10 @@ from utils import is_even_week
 
 
 def _build_schedule_text(
-        user: User,
-        schedules: list[Schedule],
-        day_name: str,
-        week_name: str,
+    user: User,
+    schedules: list[Schedule],
+    day_name: str,
+    week_name: str,
 ) -> str:
     schedule_text = f"<b>🗓️ Расписание на {day_name} ({week_name}):</b>\n\n"
     if not schedules:
@@ -24,9 +24,9 @@ def get_next_lesson_text(user: User, schedule: Schedule) -> str:
 
 
 def get_schedule_text(
-        user: User,
-        schedules: list[Schedule],
-        date: datetime.datetime,
+    user: User,
+    schedules: list[Schedule],
+    date: datetime.datetime,
 ) -> str:
     day_name = DAY_NAMES[date.weekday()]
     week_name = WEEK_NAMES[int(is_even_week(date))]
@@ -34,10 +34,10 @@ def get_schedule_text(
 
 
 def get_schedule_text_by_day(
-        user: User,
-        schedules: list[Schedule],
-        day: int,
-        even_week: bool,
+    user: User,
+    schedules: list[Schedule],
+    day: int,
+    even_week: bool,
 ) -> str:
     day_name = DAY_NAMES[day]
     week_name = WEEK_NAMES[int(even_week)]

@@ -34,7 +34,8 @@ async def start_schedule(update: Update, _) -> int | None:
                 f"{DAY_NAMES[day]} ({WEEK_NAMES[1]})",
                 callback_data=f"scheduleDay_{day}_1",
             ),
-        ] for day in DAY_NAMES
+        ]
+        for day in DAY_NAMES
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     await update.message.reply_text(

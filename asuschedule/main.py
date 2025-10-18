@@ -94,12 +94,17 @@ async def next_lesson_handler(context: ContextTypes.DEFAULT_TYPE) -> None:
     lesson_num = context.job.data["lesson_num"]
     date = datetime.datetime.now(tz=TIMEZONE)
 
-    users = session.execute(
-        select(User).filter_by(daily_notify=True),
-    ).scalars().all()
+    users = (
+        session.execute(
+            select(User).filter_by(daily_notify=True),
+        )
+        .scalars()
+        .all()
+    )
     for user in users:
         schedules = get_schedules(
-            user, date.weekday(),
+            user,
+            date.weekday(),
             is_even_week(date),
             lesson_number=lesson_num + 1,
         )
@@ -116,15 +121,20 @@ async def next_lesson_handler(context: ContextTypes.DEFAULT_TYPE) -> None:
 async def daily_schedule_handler(context: ContextTypes.DEFAULT_TYPE) -> None:
     notify_time = context.job.data["notify_time"]
 
-    users = session.execute(
-        select(User).filter_by(
-            daily_notify=True,
-            notify_time=notify_time,
-        ),
-    ).scalars().all()
+    users = (
+        session.execute(
+            select(User).filter_by(
+                daily_notify=True,
+                notify_time=notify_time,
+            ),
+        )
+        .scalars()
+        .all()
+    )
     date = (
         datetime.datetime.now(tz=TIMEZONE) + datetime.timedelta(days=1)
-        if notify_time == 20 else datetime.datetime.now(tz=TIMEZONE)
+        if notify_time == 20
+        else datetime.datetime.now(tz=TIMEZONE)
     )
     for user in users:
         schedules = get_schedules(user, date.weekday(), is_even_week(date))

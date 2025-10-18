@@ -29,19 +29,24 @@ from utils import get_main_keyboard
 
 async def start_registration(update: Update, _) -> int:
     faculties = [
-        faculty[:32] for faculty in session.execute(
+        faculty[:32]
+        for faculty in session.execute(
             select(
                 Group.faculty,
             ).distinct(),
-        ).scalars().all()
+        )
+        .scalars()
+        .all()
     ]
 
     keyboard = [
         [
             InlineKeyboardButton(
-                f"{faculty}", callback_data=f"regFac_{faculty}",
+                f"{faculty}",
+                callback_data=f"regFac_{faculty}",
             ),
-        ] for faculty in faculties
+        ]
+        for faculty in faculties
     ]
     keyboard.append([InlineKeyboardButton("Отмена", callback_data="reg_cancel")])
     reply_markup = InlineKeyboardMarkup(keyboard)
@@ -55,19 +60,27 @@ async def select_faculty(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     await query.answer()
     context.user_data["faculty"] = query.data.split("_")[-1]
 
-    courses = session.execute(
-        select(
-            Group.course,
-        ).order_by(
-            Group.course,
-        ).distinct(),
-    ).scalars().all()
+    courses = (
+        session.execute(
+            select(
+                Group.course,
+            )
+            .order_by(
+                Group.course,
+            )
+            .distinct(),
+        )
+        .scalars()
+        .all()
+    )
 
     keyboard = [
         [
             InlineKeyboardButton(
-                f"{course} курс", callback_data=f"regCourse_{course}",
-            ) for course in courses
+                f"{course} курс",
+                callback_data=f"regCourse_{course}",
+            )
+            for course in courses
         ],
         [InlineKeyboardButton("Преподаватель", callback_data="reg_teacher")],
         [InlineKeyboardButton("Отмена", callback_data="reg_cancel")],
@@ -83,22 +96,31 @@ async def select_course(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
     await query.answer()
     context.user_data["course"] = query.data.split("_")[-1]
 
-    specialities = session.execute(
-        select(
-            Group.speciality,
-        ).filter_by(
-            course=context.user_data["course"],
-        ).where(
-            Group.faculty.ilike(f"%{context.user_data['faculty']}%"),
-        ).distinct(),
-    ).scalars().all()
+    specialities = (
+        session.execute(
+            select(
+                Group.speciality,
+            )
+            .filter_by(
+                course=context.user_data["course"],
+            )
+            .where(
+                Group.faculty.ilike(f"%{context.user_data['faculty']}%"),
+            )
+            .distinct(),
+        )
+        .scalars()
+        .all()
+    )
 
     keyboard = [
         [
             InlineKeyboardButton(
-                f"{speciality[:32]}", callback_data=f"regSpec_{speciality[:24]}",
+                f"{speciality[:32]}",
+                callback_data=f"regSpec_{speciality[:24]}",
             ),
-        ] for speciality in specialities
+        ]
+        for speciality in specialities
     ]
     keyboard.append([InlineKeyboardButton("Отмена", callback_data="reg_cancel")])
     reply_markup = InlineKeyboardMarkup(keyboard)
@@ -111,19 +133,30 @@ async def select_teacher(update: Update, _) -> int:
     query = update.callback_query
     await query.answer()
 
-    teachers = session.execute(
-        select(
-            Schedule.teacher,
-        ).where(
-            Schedule.teacher.isnot(None),
-            ~Schedule.teacher.contains("/"),
-        ).distinct().order_by(Schedule.teacher),
-    ).scalars().all()
+    teachers = (
+        session.execute(
+            select(
+                Schedule.teacher,
+            )
+            .where(
+                Schedule.teacher.isnot(None),
+                ~Schedule.teacher.contains("/"),
+            )
+            .distinct()
+            .order_by(Schedule.teacher),
+        )
+        .scalars()
+        .all()
+    )
 
     keyboard = [
         [
-            InlineKeyboardButton(f"{teacher}", callback_data=f"regTeacher_{teacher}"),
-        ] for teacher in teachers
+            InlineKeyboardButton(
+                f"{teacher}",
+                callback_data=f"regTeacher_{teacher}",
+            ),
+        ]
+        for teacher in teachers
     ]
     keyboard.append(
         [
@@ -173,9 +206,11 @@ async def select_subgroup(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     group = session.execute(
         select(
             Group,
-        ).filter_by(
+        )
+        .filter_by(
             course=course,
-        ).where(
+        )
+        .where(
             Group.faculty.ilike(f"%{faculty}%"),
             Group.speciality.ilike(f"%{speciality}%"),
         ),
@@ -206,10 +241,7 @@ async def select_subgroup(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     return ConversationHandler.END
 
 
-async def finalize_registration(
-        update: Update,
-        _,
-) -> int:
+async def finalize_registration(update: Update, _) -> int:
     query = update.callback_query
     await query.answer()
 
@@ -259,7 +291,8 @@ registration_handler = ConversationHandler(
     entry_points=[
         CommandHandler("start", start_registration),
         MessageHandler(
-            filters.TEXT & filters.Regex(r"(?i)^Изменить группу$"), start_registration,
+            filters.TEXT & filters.Regex(r"(?i)^Изменить группу$"),
+            start_registration,
         ),
     ],
     states={

@@ -82,10 +82,7 @@ class User(Base):
                 f"⏰ Время рассылки: {notify_time_str}\n"
                 f"👑 Статус: {status}"
             )
-        return (
-            f"👤 Имя пользователя: {self.name}\n"
-            f"⚠️ Группа не выбрана."
-        )
+        return f"👤 Имя пользователя: {self.name}\n⚠️ Группа не выбрана."
 
 
 class Schedule(Base):
