@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 
 from consts import DAY_NAMES, WEEK_NAMES
 from models import Schedule, User
@@ -26,7 +26,7 @@ def get_next_lesson_text(user: User, schedule: Schedule) -> str:
 def get_schedule_text(
     user: User,
     schedules: list[Schedule],
-    date: datetime.datetime,
+    date: datetime,
 ) -> str:
     day_name = DAY_NAMES[date.weekday()]
     week_name = WEEK_NAMES[int(is_even_week(date))]
