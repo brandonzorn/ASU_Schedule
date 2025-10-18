@@ -27,7 +27,6 @@ from handlers import (
     turn_off_daily_notify_handler,
     users_list_handler,
     users_stats_handler,
-    error_handler,
 )
 from models import User
 from schedules.schedules import get_schedules
