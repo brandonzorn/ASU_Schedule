@@ -1,12 +1,27 @@
-[tool.flake8]
-max-line-length = 79
-inline-quotes="double"
-import-order-style="google"
-ignore = ["E203", "W503"]
+[project]
+name = "asu-schedule"
+version = "0.0.1"
+readme = "README.md"
+authors = [
+    { name = "bzorn", email = "v.klimenko.2137@gmail.com" }
+]
+requires-python = ">=3.11"
+dependencies = [
+    "environs>=15.0.1",
+    "openpyxl>=3.1.5",
+    "pandas>=2.2.3",
+    "python-telegram-bot[job-queue]>=21.6",
+    "sqlalchemy>=2.0.35",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.15.18",
+    "sort-requirements>=1.3.0",
+]
 
 [tool.ruff]
 line-length = 79
-target-version = "py311"
 
 [tool.ruff.format]
 indent-style = "space"
@@ -27,12 +42,20 @@ select = [
     "ISC",
     "N",
     "PTH",
+    "Q",
     "RET",
     "RSE",
-    "Q",
+    "RUF",
     "T20",
+    "TID",
     "UP",
     "W",
+]
+
+ignore = [
+    "RUF001",
+    "RUF003",
+    "RUF012",
 ]
 
 [tool.ruff.lint.isort]
@@ -49,11 +72,14 @@ known-first-party = [
     "utils",
 ]
 
+[tool.ruff.lint.flake8-annotations]
+allow-star-arg-any = true
+suppress-dummy-args = true
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "all"
+
 [tool.ruff.lint.flake8-quotes]
 docstring-quotes = "double"
 inline-quotes = "double"
 multiline-quotes = "double"
-
-[tool.ruff.lint.flake8-annotations]
-allow-star-arg-any = true
-suppress-dummy-args = true

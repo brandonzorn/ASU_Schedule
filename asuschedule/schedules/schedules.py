@@ -9,7 +9,7 @@ def get_schedules(
     user: User,
     weekday: int,
     even_week: bool,
-    lesson_number: int = None,
+    lesson_number: int | None = None,
 ) -> list[Schedule]:
     stmt = select(Schedule).filter_by(
         is_even_week=even_week,

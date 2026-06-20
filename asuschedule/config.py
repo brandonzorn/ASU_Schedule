@@ -1,24 +1,8 @@
-import os
+from environs import env
 
-from dotenv import load_dotenv
+env.read_env()
 
-load_dotenv()
-
-BOT_TOKEN = os.getenv("BOT_TOKEN")
-USE_ALTERNATE_LESSON_TIMES = (
-    True
-    if os.getenv(
-        "USE_ALTERNATE_LESSON_TIMES",
-    )
-    == "True"
-    else False
-)
-INVERT_WEEK_PARITY = (
-    True
-    if os.getenv(
-        "INVERT_WEEK_PARITY",
-    )
-    == "True"
-    else False
-)
-DATABASE_NAME = os.getenv("DATABASE_NAME")
+BOT_TOKEN = env.str("BOT_TOKEN")
+USE_ALTERNATE_LESSON_TIMES = env.bool("USE_ALTERNATE_LESSON_TIMES")
+INVERT_WEEK_PARITY = env.bool("INVERT_WEEK_PARITY")
+DATABASE_NAME = env.str("DATABASE_NAME")
