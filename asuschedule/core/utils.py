@@ -6,9 +6,9 @@ from telegram import ReplyKeyboardMarkup, Update
 from telegram.ext import ContextTypes
 
 from config import INVERT_WEEK_PARITY
-from database import session
-from enums import UserRole, UserStatus
-from models import User
+from core.enums import UserRole, UserStatus
+from database.connection import session
+from database.models import User
 
 
 def get_main_keyboard() -> ReplyKeyboardMarkup:

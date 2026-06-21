@@ -14,9 +14,9 @@ from telegram.ext import (
     MessageHandler,
 )
 
-from database import session
-from models import Group, Schedule, User
-from utils import get_main_keyboard
+from core.utils import get_main_keyboard
+from database.connection import session
+from database.models import Group, Schedule, User
 
 (
     SELECT_FACULTY,

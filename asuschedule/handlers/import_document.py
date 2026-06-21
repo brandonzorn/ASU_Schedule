@@ -5,10 +5,10 @@ import pandas as pd
 from sqlalchemy import delete, select
 from telegram import Update
 
-from consts import WEEK_NAMES
-from database import session
-from models import Group, Schedule
-from utils import require_staff
+from core.constants import WEEK_NAMES
+from core.utils import require_staff
+from database.connection import session
+from database.models import Group, Schedule
 
 days_of_week = {
     "пн": 0,

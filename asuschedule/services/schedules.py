@@ -1,8 +1,8 @@
 from sqlalchemy import or_, select
 
-from database import session
-from enums import UserRole
-from models import Schedule, User
+from core.enums import UserRole
+from database.connection import session
+from database.models import Schedule, User
 
 
 def get_schedules(

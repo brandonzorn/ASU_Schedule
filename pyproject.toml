@@ -62,14 +62,11 @@ ignore = [
 force-sort-within-sections = true
 order-by-type = false
 known-first-party = [
-    "consts",
+    "core",
     "config",
     "database",
-    "enums",
-    "models",
-    "schedules",
     "handlers",
-    "utils",
+    "services",
 ]
 
 [tool.ruff.lint.flake8-annotations]

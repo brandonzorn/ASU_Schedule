@@ -1,8 +1,8 @@
 from sqlalchemy import Boolean, Column, Enum, ForeignKey, Integer, String
 from sqlalchemy.orm import declarative_base, relationship
 
-from consts import LESSON_TIMES
-from enums import UserRole, UserStatus
+from core.constants import LESSON_TIMES
+from core.enums import UserRole, UserStatus
 
 Base = declarative_base()
 

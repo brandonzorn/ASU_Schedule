@@ -12,12 +12,12 @@ from telegram.ext import (
     MessageHandler,
 )
 
-from consts import DAY_NAMES, WEEK_NAMES
-from database import session
-from models import User
-from schedules.schedules import get_schedules
-from schedules.schedules_text import get_schedule_text_by_day
-from utils import require_registration
+from core.constants import DAY_NAMES, WEEK_NAMES
+from core.utils import require_registration
+from database.connection import session
+from database.models import User
+from services.schedules import get_schedules
+from services.schedules_text import get_schedule_text_by_day
 
 SELECT_DAY = 6
 

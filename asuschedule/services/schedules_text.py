@@ -1,8 +1,8 @@
 from datetime import datetime
 
-from consts import DAY_NAMES, WEEK_NAMES
-from models import Schedule, User
-from utils import is_even_week
+from core.constants import DAY_NAMES, WEEK_NAMES
+from core.utils import is_even_week
+from database.models import Schedule, User
 
 
 def _build_schedule_text(

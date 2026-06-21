@@ -1,3 +1,5 @@
+import logging
+
 from telegram import (
     InlineKeyboardButton,
     InlineKeyboardMarkup,
@@ -11,9 +13,11 @@ from telegram.ext import (
     MessageHandler,
 )
 
-from database import session
-from models import User
-from utils import require_registration
+from core.utils import require_registration
+from database.connection import session
+from database.models import User
+
+logger = logging.getLogger(__name__)
 
 SELECT_NOTIFY_TIME = 5
 
@@ -41,7 +45,7 @@ async def start_notify_time(update: Update, _) -> int:
         ],
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    await update.message.reply_text(
+    await source_message.reply_text(
         "Выберите желаемое время для ежедневной рассылки расписания:",
         reply_markup=reply_markup,
     )

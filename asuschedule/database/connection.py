@@ -4,7 +4,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from config import DATABASE_NAME
-from models import Base
+from database.models import Base
 
 Path("sqlite").mkdir(exist_ok=True)
 DATABASE_URL = f"sqlite:///sqlite/{DATABASE_NAME}.db"
